@@ -10,14 +10,14 @@ class PollContent
   
   def poll_comments
     while true
-      store_latest_comments
+      Poll.new.store_latest_comments
       sleep(1)
     end
   end
   
   def poll_submissions
     while true
-      store_latest_submissions
+      Poll.new.store_latest_submissions
       sleep(1)
     end
   end
