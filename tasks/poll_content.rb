@@ -1,6 +1,6 @@
 class PollContent
   include Sidekiq::Worker
-  def perform(data_type))
+  def perform(data_type)
     if data_type == "comments"
       poll_comments
     else
