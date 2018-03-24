@@ -10,14 +10,22 @@ class PollContent
   
   def poll_comments
     while true
-      Poll.new.store_latest_comments
+      begin
+        Poll.new.store_latest_comments
+      rescue Mongo::Error::BulkWriteError
+        print "."
+      end
       sleep(1)
     end
   end
   
   def poll_submissions
     while true
-      Poll.new.store_latest_submissions
+      begin
+        Poll.new.store_latest_submissions
+      rescue Mongo::Error::BulkWriteError
+        print "."
+      end
       sleep(1)
     end
   end
