@@ -4,7 +4,7 @@ class Poll
   end
 
   def latest_comments
-    JSON.parse(open(poll_url).read)["data"]
+    JSON.parse(open(comment_url).read)["data"]
   end
   
   def store_latest_comments
@@ -17,7 +17,7 @@ class Poll
   end
 
   def latest_submissions
-    JSON.parse(open(poll_url).read)["data"]
+    JSON.parse(open(submission_url).read)["data"]
   end
   
   def store_latest_submissions
