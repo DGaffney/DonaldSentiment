@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+gem 'mongo', '2.4.3'
+gem 'bson', '4.2.2'
+gem 'sidekiq', '3.5.1'
+gem 'tux'
+gem 'dgaff'
+gem 'pry'
