@@ -67,5 +67,5 @@ class HealthSnapshot
 end
 
 
-submissions = $client[:reddit_submissions].find.to_a;false
-submissions.collect{|x| URI.parse(x["url"]).host rescue nil}.counts
+#submissions = $client[:reddit_submissions].find.to_a;false
+#submissions.collect{|x| URI.parse(x["url"]).host rescue nil}.counts
