@@ -40,4 +40,69 @@ class DonaldSubscribers
       end
     end
   end
+  
+  def backfill_accounts
+    comment_counts = {}
+    first_comment_times = {}
+    last_comment_times = {}
+    i = 0
+    $client[:reddit_comments].find.projection("author" => 1, "created_utc" => 1).each do |comment|
+      i += 1
+      puts i if i % 10000 == 0
+      comment_counts[comment["author"]] ||= 0
+      comment_counts[comment["author"]] += 1
+      first_comment_times[comment["author"]] ||= comment["created_utc"].to_i
+      first_comment_times[comment["author"]] = comment["created_utc"].to_i if comment["created_utc"].to_i < first_comment_times[comment["author"]]
+      last_comment_times[comment["author"]] ||= comment["created_utc"].to_i
+      last_comment_times[comment["author"]] = comment["created_utc"].to_i if comment["created_utc"].to_i > last_comment_times[comment["author"]]
+    end;false
+    submission_counts = {}
+    first_submission_times = {}
+    last_submission_times = {}
+    i = 0
+    $client[:reddit_submissions].find.projection("author" => 1, "created_utc" => 1).each do |submission|
+      i += 1
+      puts i if i % 10000 == 0
+      submission_counts[submission["author"]] ||= 0
+      submission_counts[submission["author"]] += 1
+      first_submission_times[submission["author"]] ||= submission["created_utc"].to_i
+      first_submission_times[submission["author"]] = submission["created_utc"].to_i if submission["created_utc"].to_i < first_submission_times[submission["author"]]
+      last_submission_times[submission["author"]] ||= submission["created_utc"].to_i
+      last_submission_times[submission["author"]] = submission["created_utc"].to_i if submission["created_utc"].to_i > last_submission_times[submission["author"]]
+    end;false
+    $client[:reddit_authors].drop
+    $client[:reddit_authors].indexes.create_one({ author: 1 }, unique: true)
+    to_insert = []
+    (comment_counts.keys|submission_counts.keys).each do |author|
+    to_insert << {"author" => author, 
+    "comment_count" => comment_counts[author].to_i,
+    "last_comment_seen" => last_comment_times[author],
+    "first_comment_seen" => first_comment_times[author],
+    "submission_count" => submission_counts[author].to_i,
+    "last_submission_seen" => last_submission_times[author],
+    "first_submission_seen" => first_submission_times[author]}
+    end;false
+    to_insert.each_slice(1000) do |slice|
+      print "."
+      $client[:reddit_authors].insert_many(slice, ordered: false)
+    end;false
+  end
+  
+  def domain_counts
+    domain_counts = {}
+    $client[:reddit_submissions].find.projection(url: 1).each do |submission|
+      host = URI.parse(submission["url"]).host rescue nil
+      domain_counts[host] ||= 0
+      domain_counts[host] += 1
+    end;false
+    scored_domains = []
+    domain_counts.each do |domain, count|
+      next if domain.nil?
+      scored_domains << AlexaRank.new.get_score(domain).merge(hit_count: count)
+      if scored_domains.length > 100
+        $client[:domains].insert_many(scored_domains, ordered: false)
+        scored_domains = []
+      end
+    end    
+  end
 end
