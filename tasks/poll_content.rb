@@ -1,36 +1,31 @@
 class PollContent
   include Sidekiq::Worker
-  def perform(data_type)
-    if data_type == "comments"
+  def perform
+    while true
       poll_comments
-    else
       poll_submissions
     end
   end
   
   def poll_comments
-    while true
-      begin
-        Poll.new.store_latest_comments
-      rescue Mongo::Error::BulkWriteError
-        print "."
-      rescue OpenURI::HTTPError
-        retry
-      end
-      sleep(1)
+    begin
+      Poll.new.store_latest_comments
+    rescue Mongo::Error::BulkWriteError
+      print "."
+    rescue OpenURI::HTTPError
+      retry
     end
+    sleep(1)
   end
   
   def poll_submissions
-    while true
-      begin
-        Poll.new.store_latest_submissions
-      rescue Mongo::Error::BulkWriteError
-        print "."
-      rescue OpenURI::HTTPError
-        retry
-      end
-      sleep(1)
+    begin
+      Poll.new.store_latest_submissions
+    rescue Mongo::Error::BulkWriteError
+      print "."
+    rescue OpenURI::HTTPError
+      retry
     end
+    sleep(1)
   end
 end
