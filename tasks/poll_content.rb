@@ -14,6 +14,8 @@ class PollContent
         Poll.new.store_latest_comments
       rescue Mongo::Error::BulkWriteError
         print "."
+      rescue OpenURI::HTTPError
+        retry
       end
       sleep(1)
     end
@@ -25,6 +27,8 @@ class PollContent
         Poll.new.store_latest_submissions
       rescue Mongo::Error::BulkWriteError
         print "."
+      rescue OpenURI::HTTPError
+        retry
       end
       sleep(1)
     end

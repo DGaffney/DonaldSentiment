@@ -9,6 +9,7 @@ class Poll
   
   def store_latest_comments
     lc = latest_comments
+    binding.pry
     $client[:reddit_comments].insert_many(lc, ordered: false)
   end
 
