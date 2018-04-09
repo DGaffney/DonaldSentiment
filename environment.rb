@@ -1,3 +1,4 @@
+require 'dgaff'
 require 'pry'
 require 'open-uri'
 require 'json'

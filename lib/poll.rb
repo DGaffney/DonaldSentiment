@@ -51,3 +51,4 @@ class Poll
     $client[:reddit_submissions].insert_many(ls, ordered: false)
   end
 end
+#$client[:reddit_comments].find.projection("author" => )
