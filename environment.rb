@@ -9,6 +9,7 @@ require 'sidekiq'
 SETTINGS = JSON.parse(File.read("settings.json"))
 $client = Mongo::Client.new([ SETTINGS["db_url"] ], :database => SETTINGS["db"], :max_pool_size => 100, :wait_queue_timeout => 3000000, :connect_timeout => 3000000, :socket_timeout => 3000000)
 Mongo::Logger.logger.level = Logger::FATAL
+$client[:reddit_authors].indexes.create_one({ author: 1 }, unique: true)
 $client[:reddit_comments].indexes.create_one({ id: 1 }, unique: true)
 $client[:reddit_submissions].indexes.create_one({ id: 1 }, unique: true)
 $client[:reddit_comments].indexes.create_one({ created_utc: 1 })
