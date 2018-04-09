@@ -11,7 +11,7 @@ class HealthSnapshot
   
   def self.datapoints
     ["comment_count", "submission_count", "reciprocal_interactions", "distinct_author_comment_count", "distinct_author_submission_count", "posting_user_count"]
-  def
+  end
   
   def self.posting_user_count(comments, submissions, row) 
     return (comments.to_a.collect{|x| x["author"]}|submissions.to_a.collect{|x| x["author"]}).count
