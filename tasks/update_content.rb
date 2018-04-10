@@ -58,8 +58,8 @@ class UpdateContent
       sleep(1)
       tt = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
       if tt != t
-        UpdateContent.new.update(data_type) 
         t = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
+        UpdateContent.new.update(data_type) 
       end
     end
   end
