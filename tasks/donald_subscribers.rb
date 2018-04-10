@@ -97,10 +97,10 @@ class DonaldSubscribers
     end;false
     scored_domains = []
     domain_counts.each do |domain, count|
-      next if domain.nil?
-      scored_domains << AlexaRank.new.get_score(domain).merge(hit_count: count)
+      next if domain.nil? || $client[:domains].find(domain: domain).first
+      scored_domains << AlexaRank.new.get_score(domain).merge(hit_count: count) rescue nil
       if scored_domains.length > 100
-        $client[:domains].insert_many(scored_domains, ordered: false)
+        $client[:domains].insert_many(scored_domains.compact, ordered: false)
         scored_domains = []
       end
     end    
