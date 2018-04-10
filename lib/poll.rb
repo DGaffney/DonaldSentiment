@@ -33,6 +33,19 @@ class Poll
     JSON.parse(open(submission_url).read)["data"]
   end
   
+  def subreddit_url
+    "https://www.reddit.com/r/the_donald/about.json"
+  end
+
+  def latest_subreddit_info
+    JSON.parse(open(subreddit_url).read)["data"]
+  end
+
+  def store_latest_subreddit_info
+    latest = latest_subreddit_info
+    $client[:reddit_subreddits].insert_one(latest)
+  end
+
   def store_latest_submissions
     ls = latest_submissions
     times = {}
