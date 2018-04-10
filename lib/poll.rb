@@ -1,6 +1,6 @@
 class Poll
   def comment_url
-    "https://api.pushshift.io/reddit/comment/search/?subreddit=The_Donald&limit=1000"
+    "https://api.pushshift.io/reddit/comment/search/?subreddit=The_Donald&limit=1000&after=#{Time.now.utc.to_i-60*5}&sort=asc&sort_type=created_utc"
   end
 
   def latest_comments
@@ -26,7 +26,7 @@ class Poll
   end
 
   def submission_url
-    "https://api.pushshift.io/reddit/submission/search/?subreddit=The_Donald&limit=1000"
+    "https://api.pushshift.io/reddit/submission/search/?subreddit=The_Donald&limit=1000&after=#{Time.now.utc.to_i-60*5}&sort=asc&sort_type=created_utc"
   end
 
   def latest_submissions
