@@ -35,7 +35,7 @@ class UpdateContent
     collection = data_type == "comments" ? :reddit_comments : :reddit_submissions
     t_term = data_type == "comments" ? "t1_" : "t3_"
     t = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
-    1.upto(144).collect{|x| [t-x*600-30, t-x*600+30]}
+    #1.upto(144).collect{|x| [t-x*600-30, t-x*600+30]}
     ids = 1.upto(144).collect{|x| {"created_utc" => {"$gte" => t-x*600-30, "$lte" => t-x*600+30}}}.collect{|q| $client[collection].find(q).collect{|x| t_term+x["id"]}};false
     id_age_check = {}
     ids.each_with_index do |id_set, i|
@@ -55,7 +55,7 @@ class UpdateContent
   def run(data_type="comments")
     t = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
     while true
-      sleep(1)
+      sleep(3)
       tt = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
       if tt != t
         t = Time.parse(Time.now.strftime("%Y-%m-%d %H:%M:00")).utc.to_i
