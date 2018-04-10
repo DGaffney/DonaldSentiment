@@ -50,14 +50,11 @@ class Poll
     end
     ls.each do |submission|
       domain = URI.parse(submission["url"]).host rescue nil
-      begin
+      next if domain.nil?
       if $client[:domains].find(domain: domain).first.nil?
         $client[:domains].insert_one(AlexaRank.new.get_score(domain).merge(hit_count: 1))
       else
         $client[:domains].update_one({domain: domain}, {"$inc" => {hit_count: 1}})
-      end
-      rescue
-      binding.pry
       end
     end
     $client[:reddit_submissions].insert_many(ls, ordered: false)
