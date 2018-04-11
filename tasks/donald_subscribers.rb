@@ -103,6 +103,11 @@ class DonaldSubscribers
         $client[:domains].insert_many(scored_domains.compact, ordered: false)
         scored_domains = []
       end
-    end    
+    end
+    #from Spreadsheet available at: https://docs.google.com/spreadsheets/d/1vC-Gy96bF215C2lEsoYUm4wRc_n0d5HepDI7MpsvFy0/edit#gid=0
+    #host_categories = Hash[hosts.zip(tags)]
+    #host_categories.each do |domain, category|
+    #  $client[:domains].update_one({domain: domain}, {"$set" => {"category" => category}})
+    #end;false
   end
 end

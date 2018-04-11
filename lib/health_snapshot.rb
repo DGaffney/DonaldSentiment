@@ -1,4 +1,4 @@
-class HealthSnapshot  
+class HealthSnapshot
   def self.snapshot(start_time, width=60*60)
     comments = $client[:reddit_comments].find(created_utc: {"$gte" => start_time.utc.to_i, "$lte" => start_time.utc.to_i+width})
     submissions = $client[:reddit_submissions].find(created_utc: {"$gte" => start_time.utc.to_i, "$lte" => start_time.utc.to_i+width})
