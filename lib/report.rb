@@ -1,4 +1,10 @@
+class Fixnum
+  def nan?
+    return false
+  end
+end
 class Report
+  attr_accessor :raw_data
   def time_series
     ["10_minutes_past_day", "24_hours", "hour_days_past_month", "hours_in_week"]
   end
@@ -15,23 +21,104 @@ class Report
     ["karma_admin_deletion", "upvotes", "submissions", "comments", "submissions_authors", "comments_authors"]
   end
 
+  def subreddit_count_analyses
+    [:subscribers, :active_users, :active_percent]
+  end
+
+  def subreddit_count_stats(objects)
+    Hash[subreddit_count_analyses.collect{|k| [k, self.send(k, objects)]}]
+  end
+
+  def subscribers(objects)
+    objects.collect{|obj| obj["subscribers"]}
+  end
+
+  def active_users(objects)
+    objects.collect{|obj| obj["active_users"]}
+  end
+
+  def active_percent(objects)
+    objects.collect{|obj| obj["active_users"].to_f/obj["subscribers"]}
+  end
+
+  def common_analyses
+    [:count, :distinct_count, :author_deleted_count, :admin_deleted_count, :author_deleted_time, :admin_deleted_time, :distinct_author_deleted_count, :distinct_admin_deleted_count, :author_karma_deletion, :admin_karma_deletion, :author_karma_deletion_speed, :admin_karma_deletion_speed]
+  end
+  
+  def common_stats(objects)
+    Hash[common_analyses.collect{|k| [k, self.send(k, objects)]}.collect{|k,v| [k, v.nan? ? 0 : v]}]
+  end
+
+  def count(objects)
+    return objects.count
+  end
+
+  def distinct_count(objects)
+    return objects.collect{|obj| obj[:author]}.uniq.count
+  end
+
+  def author_deleted_count(objects)
+    return objects.select{|obj| !obj[:user_deleted_at].nil?}.count
+  end
+
+  def admin_deleted_count(objects)
+    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.count
+  end
+
+  def author_deleted_time(objects)
+    return objects.collect{|obj| obj[:user_deleted_at]}.compact.average
+  end
+
+  def admin_deleted_time(objects)
+    return objects.collect{|obj| obj[:admin_deleted_at]}.compact.average
+  end
+
+  def distinct_author_deleted_count(objects)
+    return objects.select{|obj| !obj[:user_deleted_at].nil?}.collect{|obj| obj[:author]}.uniq.count
+  end
+
+  def distinct_admin_deleted_count(objects)
+    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.collect{|obj| obj[:author]}.uniq.count
+  end
+
+  #use abs val instead of raw score to account for net "disruptance" of deletions
+  def author_karma_deletion(objects)
+    return objects.select{|obj| !obj[:user_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs}.sum
+  end
+
+  def admin_karma_deletion(objects)
+    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs}.sum
+  end
+
+  def author_karma_deletion_speed(objects)
+    return objects.select{|obj| !obj[:user_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:user_deleted_at].to_f}.average
+  end
+
+  def admin_karma_deletion_speed(objects)
+    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:admin_deleted_at].to_f}.average
+  end
+
   def format_comments(query)
     objects = []
+    comms = []
     query.collect do |comment|
-      sorted_updates = comment["updated_info"].sort_by{|x| x["delay"]}
+    comms << comment
+      sorted_updates = (comment["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
+      scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       toplevel = comment["parent_id"].include?("t3_") ? true : false
-      objects << {time: comment["created_utc"], up_rate: latest_update["ups"].to_f/(latest_update["delay"]||1).to_f, admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
+      objects << {net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average, admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
     end
+    objects
   end
 
   def format_submissions(query)
     objects = []
     query.collect do |submission|
       submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0}
-      sorted_updates = submission["updated_info"].sort_by{|x| x["delay"]}
+      sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
       scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
@@ -41,11 +128,12 @@ class Report
       objects[-1][:up_rate] = 0 if objects[-1][:up_rate].nan?
       print "."
     end
-    csv = CSV.open("counts.csv", "w")
-    objects.select{|x| x[:net_karma] != 0 && x[:delay_count] > 1}.each do |row|
-      csv << [Math.log(row[:net_karma]), Math.log(row[:up_rate])]
-    end;false
-    csv.close
+#    csv = CSV.open("counts.csv", "w")
+#    objects.select{|x| x[:net_karma] != 0 && x[:delay_count] > 1}.each do |row|
+#      csv << [Math.log(row[:net_karma]), Math.log(row[:up_rate])]
+#    end;false
+#    csv.close
+    objects
   end
 
   def time_partition(time, objects)
@@ -59,17 +147,39 @@ class Report
             time_mapped_objects[time_title][range] << object if object[:time] <= range[0] && object[:time] > range[1]
         end
       end
-    end;false
+    end
+    time_mapped_objects
   end
 
   def initialize(time=Time.now)
-    raw_data = {
+    @raw_data = {
       comments: time_partition(time, format_comments(db_query(time, :reddit_comments))),
       submissions: time_partition(time, format_submissions(db_query(time, :reddit_submissions))),
       authors: db_query(time, :reddit_authors),
-      subreddit_counts: db_query(time, :subreddit_counts),
-      domain_map: get_domains(time, queries)
+      subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
+      domain_map: get_domains(time, db_query(time, :reddit_submissions))
     }
+  end
+  
+  def stats
+    {
+      comments: comment_stats,
+      submissions: submission_stats,
+      subreddit_counts: subreddit_count_stats,
+      domains: @raw_data[:domain_map]
+    }
+  end
+
+  def comment_stats
+    @raw_data[:comments].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+  end
+
+  def submission_stats
+    @raw_data[:submissions].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+  end
+  
+  def subreddit_count_stats
+    @raw_data[:subreddit_counts].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[subreddit_count_stats(vvv)]]}]]}
   end
 
   def collection_field_query(collection)
