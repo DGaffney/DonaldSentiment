@@ -100,16 +100,15 @@ class Report
 
   def format_comments(query)
     objects = []
-    comms = []
     query.collect do |comment|
-    comms << comment
       sorted_updates = (comment["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
       scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       toplevel = comment["parent_id"].include?("t3_") ? true : false
-      objects << {net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average, admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
+      up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
+      objects << {net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
     end
     objects
   end
@@ -117,6 +116,7 @@ class Report
   def format_submissions(query)
     objects = []
     query.collect do |submission|
+      submission["updated_info"] ||= []
       submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0}
       sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
@@ -124,9 +124,9 @@ class Report
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
-      objects << {delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average, admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
+      up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
+      objects << {delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
       objects[-1][:up_rate] = 0 if objects[-1][:up_rate].nan?
-      print "."
     end
 #    csv = CSV.open("counts.csv", "w")
 #    objects.select{|x| x[:net_karma] != 0 && x[:delay_count] > 1}.each do |row|
@@ -136,19 +136,9 @@ class Report
     objects
   end
 
-  def time_partition(time, objects)
-    time_map = TimeDistances.time_bands(time)
-    time_mapped_objects = {}
-    objects.each do |object|
-      time_map.each do |time_title, ranges|
-        time_mapped_objects[time_title] ||= {}
-        ranges.each do |range|
-          time_mapped_objects[time_title][range] ||= []
-            time_mapped_objects[time_title][range] << object if object[:time] <= range[0] && object[:time] > range[1]
-        end
-      end
-    end
-    time_mapped_objects
+  def self.snapshot(time=Time.now)
+    obj = self.new(time)
+    obj.raw_data.merge({stats: obj.stats})
   end
 
   def initialize(time=Time.now)
@@ -163,22 +153,22 @@ class Report
   
   def stats
     {
-      comments: comment_stats,
-      submissions: submission_stats,
-      subreddit_counts: subreddit_count_stats,
+      comments: get_comment_stats,
+      submissions: get_submission_stats,
+      subreddit_counts: get_subreddit_count_stats,
       domains: @raw_data[:domain_map]
     }
   end
 
-  def comment_stats
+  def get_comment_stats
     @raw_data[:comments].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
   end
 
-  def submission_stats
+  def get_submission_stats
     @raw_data[:submissions].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
   end
   
-  def subreddit_count_stats
+  def get_subreddit_count_stats
     @raw_data[:subreddit_counts].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[subreddit_count_stats(vvv)]]}]]}
   end
 
@@ -217,4 +207,16 @@ class Report
     hosts = db_query(time, :reddit_submissions).projection(url: 1).to_a.collect{|x| x["url"]}.collect{|x| URI.parse(x).host rescue nil}.compact.counts
     Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}]
   end
+  
+  def self.backfill(latest=Time.at(TimeDistances.time_hour(Time.now)).utc, dist=60*60*24*7, window=60*10)
+    cursor = latest
+    while latest-dist < cursor
+      CreateReport.perform_async(cursor.utc.to_i)
+      print "."
+      cursor -= window
+    end
+  end
 end
+t = Time.now;gg = Report.snapshot;tt = Time.now;false
+Time.now.strftime("%Y-%m-%d")
+Report.backfill
