@@ -148,8 +148,8 @@ class Report
       time_map.each do |time_title, ranges|
         time_mapped_objects[time_title] ||= {}
         ranges.each do |range|
-          time_mapped_objects[time_title][range] ||= []
-            time_mapped_objects[time_title][range] << object if object[:time] <= range[0] && object[:time] > range[1]
+          time_mapped_objects[time_title][range.join(",")] ||= []
+            time_mapped_objects[time_title][range.join(",")] << object if object[:time] <= range[0] && object[:time] > range[1]
         end
       end
     end
