@@ -144,16 +144,26 @@ class Report
   def time_partition(time, objects)
     time_map = TimeDistances.time_bands(time)
     time_mapped_objects = {}
+    object_references = {}
     objects.each do |object|
       time_map.each do |time_title, ranges|
         time_mapped_objects[time_title] ||= {}
         ranges.each do |range|
           time_mapped_objects[time_title][range.join(",")] ||= []
+          if object.keys.include?(:id)
+            time_mapped_objects[time_title][range.join(",")] << object[:id] if object[:time] <= range[0] && object[:time] > range[1]
+            object_references[object[:id]] = object
+          else
             time_mapped_objects[time_title][range.join(",")] << object if object[:time] <= range[0] && object[:time] > range[1]
+          end
         end
       end
     end
-    time_mapped_objects
+    if object_references.empty?
+      return time_mapped_objects
+    else
+      return {map: time_mapped_objects, references: object_references}
+    end
   end
 
   def initialize(time=Time.now)
@@ -164,6 +174,7 @@ class Report
       subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
     }
+    binding.pry
   end
   
   def stats
@@ -174,7 +185,10 @@ class Report
       domains: @raw_data[:domain_map]
     }
   end
-
+  def hydrate_referenced_objs(references)
+  references[:map].each do |ref|
+  end
+  end
   def get_comment_stats
     @raw_data[:comments].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
   end
@@ -195,8 +209,8 @@ class Report
   end
 
   def projections(collection)
-    Hash[{reddit_comments: [:created_utc, :author, :ups, :parent_id, :id, :link_id, :body, :updated_info],
-    reddit_submissions: [:created_utc, :author, :ups, :url, :id, :link_id, :body, :updated_info],
+    Hash[{reddit_comments: [:id, :created_utc, :author, :ups, :parent_id, :id, :link_id, :body, :updated_info],
+    reddit_submissions: [:id, :created_utc, :author, :ups, :url, :id, :link_id, :body, :updated_info],
     reddit_authors: [:author, :comment_count, :last_comment_seen, :first_comment_seen, :submission_count, :last_submission_seen, :first_submission_seen],
     subreddit_counts: [:time, :subscribers, :active_users]}[collection].collect{|k| [k, 1]}]
   end
