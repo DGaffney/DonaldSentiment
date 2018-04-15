@@ -108,7 +108,7 @@ class Report
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       toplevel = comment["parent_id"].include?("t3_") ? true : false
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
-      objects << {net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
+      objects << {id: comment["id"], net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
     end
     objects
   end
@@ -125,7 +125,7 @@ class Report
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
-      objects << {delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
+      objects << {id: submission["id"], delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
       objects[-1][:up_rate] = 0 if objects[-1][:up_rate].nan?
     end
 #    csv = CSV.open("counts.csv", "w")
@@ -173,7 +173,7 @@ class Report
       authors: db_query(time, :reddit_authors).to_a,
       subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
-    }
+      };false
     binding.pry
   end
   
@@ -186,15 +186,22 @@ class Report
     }
   end
   def hydrate_referenced_objs(references)
-  references[:map].each do |ref|
+    hydrated = {}
+    references[:map].each do |refkey, time_slices|
+      hydrated[refkey] ||= {}
+      time_slices.each do |range, ids|
+        hydrated[refkey][range] = ids.collect{|id| references[:references][id]}
+      end
+    end;false
+    hydrated
   end
-  end
+
   def get_comment_stats
-    @raw_data[:comments].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+    hydrate_referenced_objs(@raw_data[:comments]).collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
   end
 
   def get_submission_stats
-    @raw_data[:submissions].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+    hydrate_referenced_objs(@raw_data[:submissions]).collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
   end
   
   def get_subreddit_count_stats
