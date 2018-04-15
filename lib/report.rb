@@ -160,7 +160,7 @@ class Report
     @raw_data = {
       comments: time_partition(time, format_comments(db_query(time, :reddit_comments))),
       submissions: time_partition(time, format_submissions(db_query(time, :reddit_submissions))),
-      authors: db_query(time, :reddit_authors),
+      authors: db_query(time, :reddit_authors).to_a,
       subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
     }
