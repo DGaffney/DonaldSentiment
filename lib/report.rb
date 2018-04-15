@@ -217,6 +217,6 @@ class Report
     end
   end
 end
-t = Time.now;gg = Report.snapshot;tt = Time.now;false
-Time.now.strftime("%Y-%m-%d")
-Report.backfill
+#t = Time.now;gg = Report.snapshot;tt = Time.now;false
+#Time.now.strftime("%Y-%m-%d")
+#Report.backfill
