@@ -140,6 +140,21 @@ class Report
     obj = self.new(time)
     obj.raw_data.merge({stats: obj.stats})
   end
+  
+  def time_partition(time, objects)
+    time_map = TimeDistances.time_bands(time)
+    time_mapped_objects = {}
+    objects.each do |object|
+      time_map.each do |time_title, ranges|
+        time_mapped_objects[time_title] ||= {}
+        ranges.each do |range|
+          time_mapped_objects[time_title][range] ||= []
+            time_mapped_objects[time_title][range] << object if object[:time] <= range[0] && object[:time] > range[1]
+        end
+      end
+    end
+    time_mapped_objects
+  end
 
   def initialize(time=Time.now)
     @raw_data = {
