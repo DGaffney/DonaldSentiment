@@ -174,7 +174,6 @@ class Report
       subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
-    binding.pry
   end
   
   def stats
