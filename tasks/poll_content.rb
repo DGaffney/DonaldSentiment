@@ -1,5 +1,6 @@
 class PollContent
   include Sidekiq::Worker
+  sidekiq_options queue: :poller
   def perform
     while true
       poll_comments
