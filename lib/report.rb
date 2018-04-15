@@ -220,7 +220,7 @@ class Report
 
   def get_domains(time, queries)
     hosts = db_query(time, :reddit_submissions).projection(url: 1).to_a.collect{|x| x["url"]}.collect{|x| URI.parse(x).host rescue nil}.compact.counts
-    Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}]
+    Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}].to_a
   end
   
   def self.backfill(latest=Time.at(TimeDistances.time_hour(Time.now)).utc, dist=60*60*24*7, window=60*10)
