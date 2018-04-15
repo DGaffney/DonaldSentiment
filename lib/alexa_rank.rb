@@ -75,6 +75,7 @@ class AlexaRank
 
     xml  = REXML::Document.new( res.body )
     response = Crack::XML.parse(xml.to_s)
+    binding.pry
     meat = response["aws:UrlInfoResponse"]["aws:Response"]["aws:UrlInfoResult"]["aws:Alexa"]
     {
       page_views_per_million: (meat["aws:TrafficData"]["aws:UsageStatistics"]["aws:UsageStatistic"][0]["aws:PageViews"]["aws:PerMillion"]["aws:Value"].gsub(",", "") rescue nil).to_i,
