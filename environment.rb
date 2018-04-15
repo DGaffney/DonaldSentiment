@@ -8,6 +8,7 @@ require 'mongo'
 require 'sidekiq'
 require 'uri'
 require 'crack'
+require 'sidekiq-cron'
 SETTINGS = JSON.parse(File.read("settings.json"))
 $client = Mongo::Client.new([ SETTINGS["db_url"] ], :database => SETTINGS["db"], :max_pool_size => 100, :wait_queue_timeout => 3000000, :connect_timeout => 3000000, :socket_timeout => 3000000)
 Mongo::Logger.logger.level = Logger::FATAL
