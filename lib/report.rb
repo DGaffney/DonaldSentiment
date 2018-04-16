@@ -253,7 +253,7 @@ class Report
   def self.backfill(latest=Time.at(TimeDistances.time_hour(Time.now)).utc, dist=60*60*24*7, window=60*10)
     cursor = latest
     while latest-dist < cursor
-      CreateReport.perform_async(cursor.utc.to_i)
+      CreateReport.perform_async(cursor.utc)
       print "."
       cursor -= window
     end

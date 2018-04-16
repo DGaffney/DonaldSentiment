@@ -1,6 +1,7 @@
 class CreateReport
   include Sidekiq::Worker
   def perform(cursor=Time.at(TimeDistances.time_ten_minute(Time.now)).utc)
+    cursor = Time.parse(cursor) if cursor.class == String
     report = Report.snapshot(cursor)
     $client[:stats].insert_one(time: cursor, content: report)
   end

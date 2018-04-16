@@ -38,6 +38,7 @@ def store_export
   f.close
 end
 
-#$client[:stats].find.projection(time: 1).each do |obj|
+#$client[:stats].find.each do |obj|
+#obj["content"]["submissions"]["references"].collect{|k,v| [k, (v.to_json rescue nil)]}.select{|x| x[1] == nil}
 #$client[:stats].update_one({_id: obj["_id"]}, {"$set" => {"time" => Time.at(TimeDistances.time_ten_minute(obj["time"])).utc}})
 #end;false
