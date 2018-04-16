@@ -35,7 +35,7 @@ class Report
     time_int = TimeDistances.time_ten_minute(time)
     if reduction
       $client[:stats].find(time: {"$gte" => time_int-60*60*24}).projection(self.report_projection(content_type)).each do |time_point|
-        results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
+        results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_point["time"], content_type)}
       end
     else
       $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
