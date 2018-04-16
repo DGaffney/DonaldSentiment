@@ -241,7 +241,7 @@
           if (parsed["type"] == "subscribers"){
             genSubscriberCharts(parsed)
           } else {
-            genContentCharts(parsed)
+            genContentCharts(parsed, parsed["type"])
           }
           g = 1
         });
