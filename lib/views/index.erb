@@ -1,10 +1,53 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>My First View!!</title>
-    </head>
-    <body>
-        <h1>Hello World</h1>
-        <p>This HTML code is inside of a '.erb' file in the views directory, where it belongs.</p>
-    </body>
+  <head>
+    <title>My First View!!</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+    <style>
+    .c {
+    border: solid 1px gray;
+    width: 635px;
+    height: 400px;
+    margin: 0;
+    padding: 0;
+    float: left;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+    <p>This HTML code is inside of a '.erb' file in the views directory, where it belongs.</p>
+    <div>
+      <div id="target" class="c"></div>
+    </div>
+  </body>
 </html>
+
+new tauCharts.Chart({
+    data: data(),
+    type: 'line',
+    x: 'i',
+    y: 'val',
+    color: 'type',
+    guide: {
+    	showAnchors: 'always'
+    },
+    plugins: [
+        tauCharts.api.plugins.get('tooltip')()
+    ]
+}).renderTo('#target');
+
+
+function data() {
+	return [
+    {i: 0, val: 10, type: 'A'},
+    {i: 5, val: 20, type: 'A'},
+    {i: 10, val: 15, type: 'A'},
+    {i: 0, val: 15, type: 'B'},
+    {i: 5, val: 5, type: 'B'},
+    {i: 10, val: 10, type: 'B'}
+  ]
+}
