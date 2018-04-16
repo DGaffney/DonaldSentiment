@@ -161,8 +161,8 @@ class Report
     end
   end
 
-  def initialize(time=Time.now)
-    range = TimeDistances.ten_minute_time_range(time)
+  def initialize(time=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i)
+    range = [time, time-600]
     @raw_data = {
       start_time: range.last,
       end_time: range.first,
