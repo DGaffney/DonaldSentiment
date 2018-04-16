@@ -225,7 +225,7 @@
         newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
         newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
       }
-      $.each(["comments", "submissions", "subscribers", "authors", "domains"], function (index, value){
+      $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
           parsed = jQuery.parseJSON(data);
           

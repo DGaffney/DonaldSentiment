@@ -20,8 +20,6 @@ class Report
       projection = {"time" => 1, "content.stats.submissions" => 1}
     elsif content_type == "subscribers"
       projection = {"time" => 1, "content.stats.subreddit_counts" => 1}
-    elsif content_type == "authors"
-      projection = {"time" => 1, "content.stats.authors" => 1}
     elsif content_type == "domains"
       projection = {"time" => 1, "content.stats.domains" => 1}
     end
