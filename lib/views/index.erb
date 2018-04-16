@@ -105,14 +105,6 @@
 
           return format;
       }
-      function getObjects(parsed, content_type, timeframe, timestamp_range){
-        var objects = []
-        for (var i in parsed["content"][content_type]["map"][timeframe][timestamp_range]){
-          com_id = parsed["content"][content_type]["map"][timeframe][timestamp_range][parseInt(i)]
-          objects.push(parsed["content"][content_type]["references"][com_id])
-        }
-        return objects
-      }
       function average(els){
         if (els.length == 0){
           return 0
@@ -191,6 +183,24 @@
         user_deletes_avg_time = []
         user_deletes_avg_score = []
         dates = []
+        vals = []
+        $.each( parsed, function( index, value ){
+          var date = new Date(value[0]*1000);
+          date_str = strftime(date, "%Y-%m-%d %H:%M")
+          dates.push(date_str)
+          objects = value[1]["observation"]["content"][content_type]
+          reference_objects = value[1]["reference"]["content"][content_type]
+          reference_comments = getReferenceObjects(parsed, content_type)
+          admin_deletes = adminDeletedStats(comments, reference_comments)
+          user_deletes = userDeletedStats(comments, reference_comments)
+          admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+          admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+          admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+          user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+          user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+          user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+          karmas.push({date: date_str, val: getAvgKarma(comments, reference_comments)})
+        });
         for (var key in parsed["content"][content_type]["map"][timeframe]) {
           var date = new Date(parseInt(key.split(",")[0])*1000);
           date_str = strftime(date, "%Y-%m-%d %H:%M")
