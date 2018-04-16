@@ -13,8 +13,18 @@ class Report
     {"$or" => TimeDistances.same_time_in_previous_days(time).collect{|x| {"time" => Hash[["$lte", "$gte"].zip(x)]}}}
   end
 
-  def self.reference_points(stats_obj, time)
-    projection = {"content.stats" => 1}
+  def self.reference_points(stats_obj, time, content_type)
+    if content_type == "comments"
+      projection = {"content.stats.comments" => 1}
+    elsif content_type == "submissions"
+      projection = {"content.stats.submissions" => 1}
+    elsif content_type == "subscribers"
+      projection = {"content.stats.subreddit_counts" => 1}
+    elsif content_type == "authors"
+      projection = {"content.stats.authors" => 1}
+    elsif content_type == "domains"
+      projection = {"content.stats.domain_map" => 1}
+    end
     #, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(projection).to_a}
     {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(projection).to_a}    
   end
@@ -23,7 +33,7 @@ class Report
     results = {}
     time_int = TimeDistances.time_ten_minute(time)
     $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
-      results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int)}
+      results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
     end
     return results
   end

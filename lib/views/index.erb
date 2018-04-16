@@ -225,11 +225,13 @@
         newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
         newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
       }
-      $.get("/api/latest.json", function(data, status){
-        parsed = jQuery.parseJSON(data);
-        genCoreCharts(parsed, "comment", "10_minutes_past_day")
-        genCoreCharts(parsed, "submission", "10_minutes_past_day")
-      });
+      $.each(["comments", "submissions", "subscribers", "authors", "domains"], function (index, value){
+        $.get("/api/latest/"+value+".json", function(data, status){
+          parsed = jQuery.parseJSON(data);
+          g = 1
+        });
+        
+      })
     </script>
   </head>
   <body>
