@@ -12,28 +12,37 @@ class Report
   def self.prev_days_query(time)
     {"$or" => TimeDistances.same_time_in_previous_days(time).collect{|x| {"time" => Hash[["$lte", "$gte"].zip(x)]}}}
   end
-
-  def self.reference_points(stats_obj, time, content_type)
+  
+  def self.report_projection(content_type)
     if content_type == "comments"
-      projection = {"content.stats.comments" => 1}
+      projection = {"time" => 1, "content.stats.comments" => 1}
     elsif content_type == "submissions"
-      projection = {"content.stats.submissions" => 1}
+      projection = {"time" => 1, "content.stats.submissions" => 1}
     elsif content_type == "subscribers"
-      projection = {"content.stats.subreddit_counts" => 1}
+      projection = {"time" => 1, "content.stats.subreddit_counts" => 1}
     elsif content_type == "authors"
-      projection = {"content.stats.authors" => 1}
+      projection = {"time" => 1, "content.stats.authors" => 1}
     elsif content_type == "domains"
-      projection = {"content.stats.domain_map" => 1}
+      projection = {"time" => 1, "content.stats.domain_map" => 1}
     end
-    #, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(projection).to_a}
-    {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(projection).to_a}    
+    projection
   end
 
-  def self.report(time=Time.now, content_type="comments")
+  def self.reference_points(stats_obj, time, content_type)
+    {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(self.report_projection(content_type)).to_a, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(self.report_projection(content_type)).to_a}
+  end
+
+  def self.report(time=Time.now, content_type="comments", reduction=false)
     results = {}
     time_int = TimeDistances.time_ten_minute(time)
-    $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
-      results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
+    if reduction
+      $client[:stats].find(time: {"$gte" => time_int-60*60*24}).projection(self.report_projection(content_type)).each do |time_point|
+        results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
+      end
+    else
+      $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
+        results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
+      end
     end
     return results
   end

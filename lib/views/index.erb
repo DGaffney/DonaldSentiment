@@ -228,6 +228,7 @@
       $.each(["comments", "submissions", "subscribers", "authors", "domains"], function (index, value){
         $.get("/api/latest/"+value+".json", function(data, status){
           parsed = jQuery.parseJSON(data);
+          
           g = 1
         });
         
