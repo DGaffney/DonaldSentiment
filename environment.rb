@@ -1,3 +1,4 @@
+require 'sinatra'
 require 'dgaff'
 require 'pry'
 require 'open-uri'
@@ -37,6 +38,6 @@ def store_export
   f.close
 end
 
-$client[:stats].find.projection(time: 1).each do |obj|
-$client[:stats]
-end
+#$client[:stats].find.projection(time: 1).each do |obj|
+#$client[:stats].update_one({_id: obj["_id"]}, {"$set" => {"time" => Time.at(TimeDistances.time_ten_minute(obj["time"])).utc}})
+#end;false

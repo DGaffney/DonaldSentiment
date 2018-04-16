@@ -5,6 +5,13 @@ class Fixnum
 end
 class Report
   attr_accessor :raw_data
+  def self.latest
+    $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute(Time.now)).utc).first
+  end
+  
+  def self.previous
+    $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute_previous(Time.now)).utc).first
+  end
   def time_series
     ["10_minutes_past_day", "24_hours", "hour_days_past_month", "hours_in_week"]
   end
@@ -108,7 +115,7 @@ class Report
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       toplevel = comment["parent_id"].include?("t3_") ? true : false
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
-      objects << {id: comment["id"], net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
+      objects << {id: comment["id"], net_karma: latest_update["ups"].to_f, time: comment["created_utc"], up_rate: (up_rate.nan? || !up_rate.finite? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: comment["author"], toplevel: toplevel, body: comment["body"]}
     end
     objects
   end
@@ -125,7 +132,7 @@ class Report
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
-      objects << {id: submission["id"], delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
+      objects << {id: submission["id"], delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? || !up_rate.finite? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
       objects[-1][:up_rate] = 0 if objects[-1][:up_rate].nan?
     end
 #    csv = CSV.open("counts.csv", "w")

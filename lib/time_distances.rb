@@ -3,6 +3,12 @@ class TimeDistances
     Time.parse(time.utc.strftime("%Y-%m-%d %H:%M:00 +0000")).to_i
   end
 
+  def self.time_ten_minute_previous(time)
+    time = time-500 #little less than 10 minutes to avoid previous previous
+    strftmin = time.utc.strftime("%M")[0]
+    Time.parse(time.utc.strftime("%Y-%m-%d %H:#{strftmin}0:00 +0000")).to_i
+  end
+
   def self.time_ten_minute(time)
     strftmin = time.utc.strftime("%M")[0]
     Time.parse(time.utc.strftime("%Y-%m-%d %H:#{strftmin}0:00 +0000")).to_i
