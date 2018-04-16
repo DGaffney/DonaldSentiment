@@ -171,71 +171,57 @@
           ]
         }).renderTo('#'+target);
       }
-      function genTimeline(parsed, timeframe){
+      function genCoreCharts(parsed, content_type, timeframe){
         parsed = jQuery.parseJSON(data);
         timeframe = "10_minutes_past_day"
         //timeframe = "24_hours"
-        //arr = []
-        //karmas = []
-        //admin_deletes_pct = []
-        //admin_deletes_avg_time = []
-        //admin_deletes_avg_score = []
-        //user_deletes_pct = []
-        //user_deletes_avg_time = []
-        //user_deletes_avg_score = []
-        //dates = []
-        //for (var key in parsed["content"]["comments"]["map"][timeframe]) {
-        //  var date = new Date(parseInt(key.split(",")[0])*1000);
-        //  date_str = strftime(date, "%Y-%m-%d %H:%M")
-        //  dates.push(date_str)
-        //  comments = getComments(parsed, timeframe, key)
-        //  admin_deletes = adminDeletedStats(comments)
-        //  user_deletes = userDeletedStats(comments)
-        //  admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-        //  admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-        //  admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-        //  user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-        //  user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-        //  user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-        //  karmas.push({date: date_str, val: getAvgKarma(comments)})
-        //}
-        
+        arr = []
+        karmas = []
+        admin_deletes_pct = []
+        admin_deletes_avg_time = []
+        admin_deletes_avg_score = []
+        user_deletes_pct = []
+        user_deletes_avg_time = []
+        user_deletes_avg_score = []
+        dates = []
+        for (var key in parsed["content"]["comments"]["map"][timeframe]) {
+          var date = new Date(parseInt(key.split(",")[0])*1000);
+          date_str = strftime(date, "%Y-%m-%d %H:%M")
+          dates.push(date_str)
+          comments = getComments(parsed, timeframe, key)
+          admin_deletes = adminDeletedStats(comments)
+          user_deletes = userDeletedStats(comments)
+          admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+          admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+          admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+          user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+          user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+          user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+          karmas.push({date: date_str, val: getAvgKarma(comments)})
+        }
+        newChart(karmas, "Average Karma", content_type+"_karmas")
+        newChart(admin_deletes_pct, "Mod deletion Percent", content_type+"_admin_deletes_pct")
+        newChart(admin_deletes_avg_time, "Mod time to deletion", content_type+"_admin_deletes_avg_time")
+        newChart(admin_deletes_avg_score, "Average Karma of mod deletion", content_type+"_admin_deletes_avg_score")
+        newChart(user_deletes_pct, "User deletion Percent", content_type+"_user_deletes_pct")
+        newChart(user_deletes_avg_time, "User time to deletion", content_type+"_user_deletes_avg_time")
+        newChart(user_deletes_avg_score, "Average Karma of user deletion", content_type+"_user_deletes_avg_score")
       }
       $.get("/api/latest.json", function(data, status){
-          parsed = jQuery.parseJSON(data);
-          //genChart(parsed, "10_minutes_past_day")
-          //genChart(parsed, "24_hours")
-      
-      
+        parsed = jQuery.parseJSON(data);
+        genCoreCharts(parsed, "comment", "10_minutes_past_day")
+        genCoreCharts(parsed, "submission", "10_minutes_past_day")
       });
-      
     </script>
   </head>
   <body>
     <div class="container">
-      <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item">
-          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
-        </li>
-      </ul>
-      <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">...</div>
-        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">...</div>
-        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
-      </div>
       <div class="row">
         <div class="col-md-12">
           <h1>The Donald Monitor</h1>
           <p>Monitoring the evolution of the Donald Subreddit</p>
         </div>
       </div>
-
       <div id="24_hours">
         <div class="col-md-12">
           <h3>Past 24 Hours</h3>
