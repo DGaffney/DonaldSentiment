@@ -197,7 +197,11 @@
         } else if (average(scores) < observed[data_key]){
           relative_value = "higher"
         }
-        return {date: date, value: observed[data_key], relative_value: relative_value}
+        if (data_key == "author_deleted_time" || data_key == "admin_deleted_time"){
+          return {date: date, value: observed[data_key]/60.0/60, relative_value: relative_value}
+        } else {
+          return {date: date, value: observed[data_key], relative_value: relative_value}
+        }
       }
       function genContentCharts(parsed, content_type){
         count = []
@@ -205,9 +209,9 @@
         admin_deleted_count = []
         admin_deleted_time = []
         admin_karma_deletion = []
-        user_deleted_count = []
-        user_deleted_time = []
-        user_karma_deletion = []
+        author_deleted_count = []
+        author_deleted_time = []
+        author_karma_deletion = []
         $.each(parsed["data"], function (index, value){
           var date = new Date(value[0]*1000);
           date_str = strftime(date, "%Y-%m-%d %H:%M")
@@ -221,18 +225,18 @@
           admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
           admin_deleted_time.push(dataPointWithReference(observed, reference, "admin_deleted_time", date))
           admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_karma_deletion", date))
-          user_deleted_count.push(dataPointWithReference(observed, reference, "user_deleted_count", date))
-          user_deleted_time.push(dataPointWithReference(observed, reference, "user_deleted_time", date))
-          user_karma_deletion.push(dataPointWithReference(observed, reference, "user_karma_deletion", date))
+          author_deleted_count.push(dataPointWithReference(observed, reference, "author_deleted_count", date))
+          author_deleted_time.push(dataPointWithReference(observed, reference, "author_deleted_time", date))
+          author_karma_deletion.push(dataPointWithReference(observed, reference, "author_karma_deletion", date))
         })
         newChart(count, content_type+"_count")
         newChart(author_count, content_type+"_author_count")
         newChart(admin_deleted_count, content_type+"_admin_deleted_count")
         newChart(admin_deleted_time, content_type+"_admin_deleted_time")
         newChart(admin_karma_deletion, content_type+"_admin_karma_deletion")
-        newChart(user_deleted_count, content_type+"_user_deleted_count")
-        newChart(user_deleted_time, content_type+"_user_deleted_time")
-        newChart(user_admin_karma_deletion, content_type+"_user_karma_deletion")
+        newChart(author_deleted_count, content_type+"_user_deleted_count")
+        newChart(author_deleted_time, content_type+"_user_deleted_time")
+        newChart(author_admin_karma_deletion, content_type+"_user_karma_deletion")
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
@@ -313,21 +317,21 @@
                 <div class="row">
                   <div class="col-md-12">
                     <h4>Number of User deletions</h4>
-                    <div id="comments_user_deleted_count" class="c chart">
+                    <div id="comments_author_deleted_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
                     <h4>Amount of time before User deletions</h4>
-                    <div id="comments_user_deleted_time" class="c chart">
+                    <div id="comments_author_deleted_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
                     <h4>Net Karma of User deletions</h4>
-                    <div id="comments_user_karma_deletion" class="c chart">
+                    <div id="comments_author_karma_deletion" class="c chart">
                     </div>
                   </div>
                 </div>
