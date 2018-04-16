@@ -198,7 +198,7 @@
           relative_value = "higher"
         }
         if (data_key == "author_deleted_time" || data_key == "admin_deleted_time"){
-          return {date: date, value: observed[data_key]/60.0/60, relative_value: relative_value}
+          return {date: date, value: Math.round((observed[data_key]/60.0/60)*100)/100, relative_value: relative_value}
         } else {
           return {date: date, value: observed[data_key], relative_value: relative_value}
         }
@@ -221,7 +221,7 @@
             reference.push(i_value["content"]["stats"][content_type])
           })
           count.push(dataPointWithReference(observed, reference, "count", date))
-          author_count.push(dataPointWithReference(observed, reference, "author_count", date))
+          author_count.push(dataPointWithReference(observed, reference, "distinct_count", date))
           admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
           admin_deleted_time.push(dataPointWithReference(observed, reference, "admin_deleted_time", date))
           admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_karma_deletion", date))
