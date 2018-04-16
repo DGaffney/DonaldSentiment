@@ -215,7 +215,6 @@
           $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
             reference.push(i_value["content"]["stats"][content_type])
           })
-          dataPointWithReference(observed, reference, data_key)
           count.push(dataPointWithReference(observed, reference, "count", date))
           author_count.push(dataPointWithReference(observed, reference, "author_count", date))
           admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
@@ -225,14 +224,6 @@
           user_deleted_time.push(dataPointWithReference(observed, reference, "user_deleted_time", date))
           user_admin_karma_deletion.push(dataPointWithReference(observed, reference, "user_admin_karma_deletion", date))
         })
-        newChart(karmas, content_type+"_karmas")
-        newChart(admin_deletes_pct, content_type+"_admin_deletes_pct")
-        newChart(admin_deletes_avg_time, content_type+"_admin_deletes_avg_time")
-        newChart(admin_deletes_avg_score, content_type+"_admin_deletes_avg_score")
-        newChart(user_deletes_pct, content_type+"_user_deletes_pct")
-        newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
-        newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
-        
         newChart(count, content_type+"_count")
         newChart(author_count, content_type+"_author_count")
         newChart(admin_deleted_count, content_type+"_admin_deleted_count")
