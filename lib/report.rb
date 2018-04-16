@@ -6,7 +6,7 @@ end
 class Report
   attr_accessor :raw_data
   def self.latest
-    $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute(Time.now)).utc).first
+    $client[:stats].find({}, :sort => ['time',-1]).first
   end
 
   def self.current
