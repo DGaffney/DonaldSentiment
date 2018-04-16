@@ -204,10 +204,10 @@
         author_count = []
         admin_deleted_count = []
         admin_deleted_time = []
-        admin_admin_karma_deletion = []
+        admin_karma_deletion = []
         user_deleted_count = []
         user_deleted_time = []
-        user_admin_karma_deletion = []
+        user_karma_deletion = []
         $.each(parsed["data"], function (index, value){
           var date = new Date(value[0]*1000);
           date_str = strftime(date, "%Y-%m-%d %H:%M")
@@ -220,19 +220,19 @@
           author_count.push(dataPointWithReference(observed, reference, "author_count", date))
           admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
           admin_deleted_time.push(dataPointWithReference(observed, reference, "admin_deleted_time", date))
-          admin_admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_admin_karma_deletion", date))
+          admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_karma_deletion", date))
           user_deleted_count.push(dataPointWithReference(observed, reference, "user_deleted_count", date))
           user_deleted_time.push(dataPointWithReference(observed, reference, "user_deleted_time", date))
-          user_admin_karma_deletion.push(dataPointWithReference(observed, reference, "user_admin_karma_deletion", date))
+          user_karma_deletion.push(dataPointWithReference(observed, reference, "user_karma_deletion", date))
         })
         newChart(count, content_type+"_count")
         newChart(author_count, content_type+"_author_count")
         newChart(admin_deleted_count, content_type+"_admin_deleted_count")
         newChart(admin_deleted_time, content_type+"_admin_deleted_time")
-        newChart(admin_admin_karma_deletion, content_type+"_admin_admin_karma_deletion")
+        newChart(admin_karma_deletion, content_type+"_admin_karma_deletion")
         newChart(user_deleted_count, content_type+"_user_deleted_count")
         newChart(user_deleted_time, content_type+"_user_deleted_time")
-        newChart(user_admin_karma_deletion, content_type+"_user_admin_karma_deletion")
+        newChart(user_admin_karma_deletion, content_type+"_user_karma_deletion")
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
