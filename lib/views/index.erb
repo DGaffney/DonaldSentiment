@@ -230,7 +230,7 @@
           var date = new Date(value[0]*1000);
           date_str = strftime(date, "%Y-%m-%d %H:%M")
           observed = value[1]["observation"]["content"]["stats"]["subreddit_counts"]
-          {date: date_str, val: observed["subscribers"]}
+        //  {date: date_str, val: observed["subscribers"]}
         })
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
