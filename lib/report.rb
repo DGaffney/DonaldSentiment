@@ -177,7 +177,7 @@ class Report
       comments: format_comments(db_query(time, :reddit_comments)),
       submissions: format_submissions(db_query(time, :reddit_submissions)),
       authors: db_query(time, :reddit_authors).to_a,
-      subreddit_counts: db_query(time, :subreddit_counts),
+      subreddit_counts: db_query(time, :subreddit_counts).to_a,
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
