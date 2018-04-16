@@ -187,14 +187,14 @@
       function dataPointWithReference(observed, reference, data_key, date){
         scores = []
         $.each(reference, function (ii,vv){
-          if (vv != null){
+          if (vv != null && vv[data_key] != 0){
             scores.push(vv[data_key])
           }
         })
         var relative_value = "similar";
-        if (average(scores) > observed[data_key]+observed[data_key]*0.25){
+        if (average(scores) > observed[data_key]){
           relative_value = "lower"          
-        } else if (average(scores) < observed[data_key]-observed[data_key]*0.25){
+        } else if (average(scores) < observed[data_key]){
           relative_value = "higher"
         }
         return {date: date, value: observed[data_key], relative_value: relative_value}
