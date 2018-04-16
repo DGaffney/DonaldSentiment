@@ -234,9 +234,9 @@
         newChart(admin_deleted_count, content_type+"_admin_deleted_count")
         newChart(admin_deleted_time, content_type+"_admin_deleted_time")
         newChart(admin_karma_deletion, content_type+"_admin_karma_deletion")
-        newChart(author_deleted_count, content_type+"_user_deleted_count")
-        newChart(author_deleted_time, content_type+"_user_deleted_time")
-        newChart(author_admin_karma_deletion, content_type+"_user_karma_deletion")
+        newChart(author_deleted_count, content_type+"_author_deleted_count")
+        newChart(author_deleted_time, content_type+"_author_deleted_time")
+        newChart(author_karma_deletion, content_type+"_author_karma_deletion")
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
