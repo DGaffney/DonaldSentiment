@@ -188,7 +188,9 @@
       function dataPointWithReference(observed, reference, data_key, date){
         scores = []
         $.each(reference, function (ii,vv){
-          scores.push(vv[data_key])
+          if (vv != null){
+            scores.push(vv[data_key])
+          }
         })
         var relative_value = "similar";
         if (average(scores) > observed[data_key]+observed[data_key]*0.25){
