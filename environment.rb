@@ -25,6 +25,10 @@ $client[:reddit_comments].indexes.create_one({ created_utc: -1 })
 $client[:reddit_submissions].indexes.create_one({ created_utc: -1 })
 $client[:stats].indexes.create_one({ time: -1 })
 $redis = Redis.new
+set :root, File.join(File.dirname(__FILE__))
+# sets the view directory correctly
+set :views, Proc.new { File.join(root, "views") } 
+
 Dir[File.dirname(__FILE__) + '/lib/*.rb'].each {|file| require file }
 Dir[File.dirname(__FILE__) + '/tasks/*.rb'].each {|file| require file }
 def store_export
