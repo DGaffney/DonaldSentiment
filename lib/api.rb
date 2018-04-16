@@ -6,6 +6,10 @@ class Site < Sinatra::Base
   end
 
   get "/api/latest.json" do
-    return Report.report.to_json
+    return Report.report.sort_by{|k,v| k}.to_json
+  end
+
+  get "/api/at_time/:time.json" do
+    return Report.report(Time.at(params[:time].to_i)).sort_by{|k,v| k}.to_json
   end
 end
