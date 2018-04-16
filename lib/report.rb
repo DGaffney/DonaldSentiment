@@ -14,11 +14,12 @@ class Report
   end
 
   def self.reference_points(stats_obj, time)
-    projection = {"content.stats.comments" => 1}
-    {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(projection).to_a, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(projection).to_a}
+    projection = {"content.stats" => 1}
+    #, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(projection).to_a}
+    {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(projection).to_a}    
   end
 
-  def self.report(time=Time.now)
+  def self.report(time=Time.now, content_type="comments")
     results = {}
     time_int = TimeDistances.time_ten_minute(time)
     $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
