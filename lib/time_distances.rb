@@ -1,4 +1,18 @@
 class TimeDistances
+  def self.same_time_in_previous_month(time)
+    [[time-60*60*24*7, time-60*60*24*7-600],
+    [time-60*60*24*7*2, time-60*60*24*7*2-600],
+    [time-60*60*24*7*3, time-60*60*24*7*3-600],
+    [time-60*60*24*7*4, time-60*60*24*7*4-600]]
+  end
+
+  def self.same_time_in_previous_days(time)
+    [[time-60*60*24, time-60*60*24-600],
+    [time-60*60*24*2, time-60*60*24*2-600],
+    [time-60*60*24*3, time-60*60*24*3-600],
+    [time-60*60*24*4, time-60*60*24*4-600]]
+  end
+
   def self.time_minute(time)
     Time.parse(time.utc.strftime("%Y-%m-%d %H:%M:00 +0000")).to_i
   end

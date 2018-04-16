@@ -6,14 +6,6 @@ class Site < Sinatra::Base
   end
 
   get "/api/latest.json" do
-    return Report.latest.to_json
-  end
-
-  get "/api/current.json" do
-    return Report.current.to_json
-  end
-
-  get "/api/previous.json" do
-    return Report.latest.to_json
+    return Report.report.to_json
   end
 end

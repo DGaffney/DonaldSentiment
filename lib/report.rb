@@ -5,9 +5,27 @@ class Fixnum
 end
 class Report
   attr_accessor :raw_data
-  def self.report(time=Time.now)
-    $client[:stats].find(time: {"$gte" => TimeDistances.time_ten_minute(time)-60*60*24})
+  def self.prev_month_query(time)
+    {"$or" => TimeDistances.same_time_in_previous_month(time).collect{|x| {"time" => Hash[["$lte", "$gte"].zip(x)]}}}
   end
+  
+  def self.prev_days_query(time)
+    {"$or" => TimeDistances.same_time_in_previous_days(time).collect{|x| {"time" => Hash[["$lte", "$gte"].zip(x)]}}}
+  end
+
+  def self.reference_points(stats_obj, time)
+    {prev_month: $client[:stats].find(self.prev_month_query(time)), prev_day: $client[:stats].find(self.prev_days_query(time))}
+  end
+
+  def self.report(time=Time.now)
+    results = {}
+    time_int = TimeDistances.time_ten_minute(time)
+    $client[:stats].find(time: {"$gte" => time_int-60*60*24}).each do |time_point|
+      results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int)}
+    end
+    return results
+  end
+
   def time_series
     ["10_minutes_past_day", "24_hours", "hour_days_past_month", "hours_in_week"]
   end
@@ -223,8 +241,8 @@ class Report
     hosts = db_query(time, :reddit_submissions).projection(url: 1).to_a.collect{|x| x["url"]}.collect{|x| URI.parse(x).host rescue nil}.compact.counts
     Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}].to_a
   end
-  
-  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7, window=60*10)
+ 
+  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7*4, window=60*10)
     cursor = latest
     while latest-dist < cursor
       CreateReport.perform_async(cursor)
