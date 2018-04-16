@@ -217,7 +217,7 @@
           date_str = strftime(date, "%Y-%m-%d %H:%M")
           observed = value[1]["observation"]["content"]["stats"][content_type]
           reference = []
-          $.each(value[["reference"]["prev_month"], function (i_index, i_value){
+          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
             reference.push(i_value["content"]["stats"][content_type])
           })
           count.push(dataPointWithReference(observed, reference, "count", date))
