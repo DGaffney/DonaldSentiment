@@ -192,9 +192,9 @@
           }
         })
         var relative_value = "similar";
-        if (average(scores) > observed[data_key]){
+        if (average(scores) > observed[data_key]+observed[data_key]*0.25){
           relative_value = "lower"          
-        } else if (average(scores) < observed[data_key]){
+        } else if (average(scores) < observed[data_key]-observed[data_key]*0.25){
           relative_value = "higher"
         }
         if (data_key == "author_deleted_time" || data_key == "admin_deleted_time"){
@@ -217,7 +217,7 @@
           date_str = strftime(date, "%Y-%m-%d %H:%M")
           observed = value[1]["observation"]["content"]["stats"][content_type]
           reference = []
-          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
+          $.each(value[["reference"]["prev_month"], function (i_index, i_value){
             reference.push(i_value["content"]["stats"][content_type])
           })
           count.push(dataPointWithReference(observed, reference, "count", date))
