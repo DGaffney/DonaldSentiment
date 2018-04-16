@@ -206,14 +206,14 @@ class Report
       comments: format_comments(db_query(time, :reddit_comments)),
       submissions: format_submissions(db_query(time, :reddit_submissions)),
       authors: db_query(time, :reddit_authors).to_a,
-      subreddit_counts: {raw: db_query(time, :subreddit_counts).to_a.first, diff: subscriber_count_diff(db_query(time, :subreddit_counts).to_a.first, db_query(time-3600, :subreddit_counts).to_a.first)},
+      subreddit_counts: {raw: db_query(time, :subreddit_counts).to_a.first, diff: subscriber_count_diff(subscriber_query(time, :subreddit_counts), subscriber_query(time-3600, :subreddit_counts))},
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
   
   def subscriber_count_diff(cur_count, prev_count)
-    {subscriber_count: (cur_count["subscribers"]-prev_count["subscribers"]),
-    active_count: (cur_count["active_users"]-prev_count["active_users"]),
+    {subscriber_count: (cur_count["subscribers"]-prev_count["subscribers"])/((cur_count["time"]-prev_count["time"])/60/60.0),
+    active_count: (cur_count["active_users"]-prev_count["active_users"])/((cur_count["time"]-prev_count["time"])/60/60.0),
     active_pct: (cur_count["active_users"].to_f/cur_count["subscribers"]-prev_count["active_users"].to_f/prev_count["subscribers"])}
   end
 
@@ -250,6 +250,11 @@ class Report
     reddit_submissions: [:id, :created_utc, :author, :ups, :url, :id, :link_id, :body, :updated_info],
     reddit_authors: [:author, :comment_count, :last_comment_seen, :first_comment_seen, :submission_count, :last_submission_seen, :first_submission_seen],
     subreddit_counts: [:time, :subscribers, :active_users]}[collection].collect{|k| [k, 1]}]
+  end
+
+  def subscriber_query(time, collection)
+    query = {collection_field_query(collection) => {"$lte" => time}}
+    $client[collection].find(query, :sort => {'time' => -1}).projection(projections(collection)).first
   end
 
   def db_query(time, collection)
