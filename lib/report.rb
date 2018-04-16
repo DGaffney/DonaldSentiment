@@ -14,7 +14,8 @@ class Report
   end
 
   def self.reference_points(stats_obj, time)
-    {prev_month: $client[:stats].find(self.prev_month_query(time)).to_a, prev_day: $client[:stats].find(self.prev_days_query(time)).to_a}
+    projection = {"content.authors" => 1, "content.stats" => 1, "content.subreddit_counts" => 1, "content.domain_map" => 1}
+    {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(projection).to_a, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(projection).to_a}
   end
 
   def self.report(time=Time.now)
