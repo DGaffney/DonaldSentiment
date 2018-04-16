@@ -210,7 +210,7 @@ class Report
   end
 
   def db_query(time, collection)
-    range = TimeDistances.ten_minute_time_range(time)
+    range = [time, time-600]
     if collection_field_query(collection).class == Array
       query = {"$or" => collection_field_query(collection).collect{|c| {c => {"$lte" => range.first, "$gte" => range.last}}}}
     else
@@ -224,10 +224,10 @@ class Report
     Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}].to_a
   end
   
-  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc, dist=60*60*24*7, window=60*10)
+  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7, window=60*10)
     cursor = latest
     while latest-dist < cursor
-      CreateReport.perform_async(cursor.utc.to_i)
+      CreateReport.perform_async(cursor)
       print "."
       cursor -= window
     end
