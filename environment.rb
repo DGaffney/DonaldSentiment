@@ -22,6 +22,7 @@ $client[:reddit_comments].indexes.create_one({ created_utc: 1 })
 $client[:reddit_submissions].indexes.create_one({ created_utc: 1 })
 $client[:reddit_comments].indexes.create_one({ created_utc: -1 })
 $client[:reddit_submissions].indexes.create_one({ created_utc: -1 })
+$client[:stats].indexes.create_one({ time: -1 })
 $redis = Redis.new
 Dir[File.dirname(__FILE__) + '/lib/*.rb'].each {|file| require file }
 Dir[File.dirname(__FILE__) + '/tasks/*.rb'].each {|file| require file }
@@ -34,4 +35,8 @@ def store_export
     f.write(x["body"].gsub("\n", " ")+"\n")
   end;false
   f.close
+end
+
+$client[:stats].find.projection(time: 1).each do |obj|
+$client[:stats]
 end

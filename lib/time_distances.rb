@@ -3,6 +3,11 @@ class TimeDistances
     Time.parse(time.utc.strftime("%Y-%m-%d %H:%M:00 +0000")).to_i
   end
 
+  def self.time_ten_minute(time)
+    strftmin = time.utc.strftime("%M")[0]
+    Time.parse(time.utc.strftime("%Y-%m-%d %H:#{strftmin}0:00 +0000")).to_i
+  end
+
   def self.time_hour(time)
     Time.parse(time.utc.strftime("%Y-%m-%d %H:00:00 +0000")).to_i
   end
