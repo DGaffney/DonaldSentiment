@@ -20,14 +20,6 @@ class Report
     ["10_minutes_past_day", "24_hours", "hour_days_past_month", "hours_in_week"]
   end
 
-  def time_series_titles
-    ["24 Hour Detailed", "24 Hour", "Same Time in Past Month", "Same Time in past Week "]
-  end
-
-  def subsets
-    ["top", "full", "long_term"]
-  end
-
   def metrics
     ["karma_admin_deletion", "upvotes", "submissions", "comments", "submissions_authors", "comments_authors"]
   end
@@ -178,11 +170,14 @@ class Report
   end
 
   def initialize(time=Time.now)
+    range = TimeDistances.ten_minute_time_range(time)
     @raw_data = {
-      comments: time_partition(time, format_comments(db_query(time, :reddit_comments))),
-      submissions: time_partition(time, format_submissions(db_query(time, :reddit_submissions))),
+      start_time: range.last,
+      end_time: range.first,
+      comments: format_comments(db_query(time, :reddit_comments)),
+      submissions: format_submissions(db_query(time, :reddit_submissions)),
       authors: db_query(time, :reddit_authors).to_a,
-      subreddit_counts: time_partition(time, db_query(time, :subreddit_counts)),
+      subreddit_counts: db_query(time, :subreddit_counts),
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
@@ -195,27 +190,17 @@ class Report
       domains: @raw_data[:domain_map]
     }
   end
-  def hydrate_referenced_objs(references)
-    hydrated = {}
-    references[:map].each do |refkey, time_slices|
-      hydrated[refkey] ||= {}
-      time_slices.each do |range, ids|
-        hydrated[refkey][range] = ids.collect{|id| references[:references][id]}
-      end
-    end;false
-    hydrated
-  end
 
   def get_comment_stats
-    hydrate_referenced_objs(@raw_data[:comments]).collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+    common_stats(@raw_data[:comments])
   end
 
   def get_submission_stats
-    hydrate_referenced_objs(@raw_data[:submissions]).collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[common_stats(vvv)]]}]]}
+    common_stats(@raw_data[:submissions])
   end
   
   def get_subreddit_count_stats
-    @raw_data[:subreddit_counts].collect{|k,v| Hash[k,Hash[v.collect{|vv, vvv| [vv, Hash[subreddit_count_stats(vvv)]]}]]}
+    subreddit_count_stats(@raw_data[:subreddit_counts])
   end
 
   def collection_field_query(collection)
@@ -233,20 +218,13 @@ class Report
   end
 
   def db_query(time, collection)
-    time_distances = TimeDistances.time_queries(time)
-    uniq_time_queries = []
-    time_distances.values.each do |v|
-      v.each do |vv|
-        uniq_time_queries << vv
-      end
-    end
-    queries = []
+    range = TimeDistances.ten_minute_time_range(time)
     if collection_field_query(collection).class == Array
-      queries = {"$or" => uniq_time_queries.uniq.collect{|range| collection_field_query(collection).collect{|c| {c => {"$lte" => range.first, "$gte" => range.last}}}}.flatten}
+      query = {"$or" => collection_field_query(collection).collect{|c| {c => {"$lte" => range.first, "$gte" => range.last}}}}
     else
-      queries = {"$or" => uniq_time_queries.uniq.collect{|range| {collection_field_query(collection) => {"$lte" => range.first, "$gte" => range.last}}}}
+      query = {collection_field_query(collection) => {"$lte" => range.first, "$gte" => range.last}}
     end
-    $client[collection].find(queries).projection(projections(collection))
+    $client[collection].find(query).projection(projections(collection))
   end
 
   def get_domains(time, queries)
@@ -266,3 +244,4 @@ end
 #t = Time.now;gg = Report.snapshot;tt = Time.now;false
 #Time.now.strftime("%Y-%m-%d")
 #Report.backfill
+Report.snapshot

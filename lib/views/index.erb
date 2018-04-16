@@ -20,7 +20,7 @@
     float: left;
     }
     .chart{
-      height: 120px;
+      height: 360px;
     }
     </style>
     <script>
@@ -105,13 +105,13 @@
 
           return format;
       }
-      function getComments(parsed, timeframe, timestamp_range){
-        var comments = []
-        for (var i in parsed["content"]["comments"]["map"][timeframe][timestamp_range]){
-          com_id = parsed["content"]["comments"]["map"][timeframe][timestamp_range][parseInt(i)]
-          comments.push(parsed["content"]["comments"]["references"][com_id])
+      function getObjects(parsed, content_type, timeframe, timestamp_range){
+        var objects = []
+        for (var i in parsed["content"][content_type]["map"][timeframe][timestamp_range]){
+          com_id = parsed["content"][content_type]["map"][timeframe][timestamp_range][parseInt(i)]
+          objects.push(parsed["content"][content_type]["references"][com_id])
         }
-        return comments
+        return objects
       }
       function average(els){
         if (els.length == 0){
@@ -151,7 +151,7 @@
         }
         return average(scores)
       }
-      function getAvgKarma(objects){
+      function getAvgKarma(objects, reference_objects){
         scores = []
         for (var i in objects){
           scores.push(objects[parseInt(i)]["net_karma"])
@@ -174,8 +174,15 @@
           ]
         }).renderTo('#'+target);
       }
+      function getReferenceObjects(parsed, content_type){
+        full_objects = []
+        for (var key in parsed["content"][content_type]["map"]["hour_days_past_month"]) {
+          objects = getObjects(parsed, content_type, "hour_days_past_month", key)
+          full_objects.push(objects)
+        }
+        return [].concat.apply([], full_objects)
+      }
       function genCoreCharts(parsed, content_type, timeframe){
-        arr = []
         karmas = []
         admin_deletes_pct = []
         admin_deletes_avg_time = []
@@ -184,20 +191,21 @@
         user_deletes_avg_time = []
         user_deletes_avg_score = []
         dates = []
-        for (var key in parsed["content"]["comments"]["map"][timeframe]) {
+        for (var key in parsed["content"][content_type]["map"][timeframe]) {
           var date = new Date(parseInt(key.split(",")[0])*1000);
           date_str = strftime(date, "%Y-%m-%d %H:%M")
           dates.push(date_str)
-          comments = getComments(parsed, timeframe, key)
-          admin_deletes = adminDeletedStats(comments)
-          user_deletes = userDeletedStats(comments)
+          comments = getObjects(parsed, content_type, timeframe, key)
+          reference_comments = getReferenceObjects(parsed, content_type)
+          admin_deletes = adminDeletedStats(comments, reference_comments)
+          user_deletes = userDeletedStats(comments, reference_comments)
           admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
           admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
           admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
           user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
           user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
           user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-          karmas.push({date: date_str, val: getAvgKarma(comments)})
+          karmas.push({date: date_str, val: getAvgKarma(comments, reference_comments)})
         }
         newChart(karmas, content_type+"_karmas")
         newChart(admin_deletes_pct, content_type+"_admin_deletes_pct")

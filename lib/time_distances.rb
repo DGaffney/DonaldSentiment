@@ -38,6 +38,10 @@ class TimeDistances
     [[self.time_minute(time), self.time_minute(time)-60*60*24]]
   end
 
+  def self.ten_minute_time_range(time)
+    [self.time_ten_minute(time), self.time_ten_minute(time)-600]
+  end
+
   def self.time_queries(time)
     {"10_minutes_past_day" => self.past_24_hours(time), "24_hours" => self.past_24_hours(time), "hours_in_week" => self.hour_week(time), "hour_days_past_month" => self.hour_day_month(time)}
   end
