@@ -11,13 +11,196 @@
     .c {
     border: solid 1px gray;
     width: 100%;
-    height: 400px;
+    height: 100%;
     margin: 0;
     padding: 0;
     float: left;
     }
+    .chart{
+      height: 80px;
+    }
     </style>
     <script>
+      var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      var shortDays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      var shortMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+      function zeropad(n) {
+          return n > 9 ? String(n) : "0" + String(n);
+      }
+
+      function twelveHour(t) {
+          var hour = t.getHours() % 12;
+          return hour === 0 ? 12 : hour;
+      }
+
+      var strftimeCallbacks = {
+          // Short day name (Sun-Sat)
+          a: function (t) { return shortDays[t.getDay()]; },
+          // Long day name (Sunday-Saturday)
+          A: function (t) { return days[t.getDay()]; },
+          // Short month name (Jan-Dec)
+          b: function (t) { return shortMonths[t.getMonth()]; },
+          // Long month name (January-December)
+          B: function (t) { return months[t.getMonth()]; },
+          // String representation (Thu Dec 23 2010 11:48:54 GMT-0800 (PST))
+          c: function (t) { return t.toString(); },
+          // Two-digit day of the month (01-31)
+          d: function (t) { return zeropad(t.getDate()); },
+          // Day of the month (1-31)
+          D: function (t) { return String(t.getDate()); },
+          // Two digit hour in 24-hour format (00-23)
+          H: function (t) { return zeropad(t.getHours()); },
+          // Hour in 24-hour format (0-23)
+          i: function (t) { return String(t.getHours()); },
+          // Two digit hour in 12-hour format (01-12)
+          I: function (t) { return zeropad(twelveHour(t)); },
+          // Hour in 12-hour format (1-12)
+          l: function (t) { return String(twelveHour(t)); },
+          // Two digit month (01-12)
+          m: function (t) { return zeropad(t.getMonth() + 1); },
+          // Two digit minutes (00-59)
+          M: function (t) { return zeropad(t.getMinutes()); },
+          // am or pm
+          p: function (t) { return t.getHours() < 12 ? "am" : "pm"; },
+          // AM or PM
+          P: function (t) { return t.getHours() < 12 ? "AM" : "PM"; },
+          // Two digit seconds (00-61)
+          S: function (t) { return zeropad(t.getSeconds()); },
+          // Zero-based day of the week (0-6)
+          w: function (t) { return String(t.getDay()); },
+          // Locale-specific date representation
+          x: function (t) { return t.toLocaleDateString(); },
+          // Locale-specific time representation
+          X: function (t) { return t.toLocaleTimeString(); },
+          // Year without century (00-99)
+          y: function (t) { return zeropad(t.getFullYear() % 100); },
+          // Year with century
+          Y: function (t) { return String(t.getFullYear()); },
+          // Timezone offset (+0000)
+          Z: function (t) {
+                   if (t.getTimezoneOffset() > 0) {
+                       return "-" + zeropad(t.getTimezoneOffset() / 60) + "00";
+                   } else {
+                       return "+" + zeropad(Math.abs(t.getTimezoneOffset()) / 60) + "00";
+                   }
+               },
+          // A percent sign
+          "%": function (t) { return "%"; }
+      };
+
+      /**
+       * Returns a string of the +date+ in the given +format+.
+       */
+      function strftime(date, format) {
+          var regexp;
+          for (var symbol in strftimeCallbacks) {
+              regexp = new RegExp("%" + symbol, "g");
+              format = format.replace(regexp, strftimeCallbacks[symbol](date));
+          }
+
+          return format;
+      }
+      function getComments(parsed, timeframe, timestamp_range){
+        var comments = []
+        for (var i in parsed["content"]["comments"]["map"][timeframe][timestamp_range]){
+          com_id = parsed["content"]["comments"]["map"][timeframe][timestamp_range][parseInt(i)]
+          comments.push(parsed["content"]["comments"]["references"][com_id])
+        }
+        return comments
+      }
+      function average(els){
+        if (els.length == 0){
+          return 0
+        } else {
+          var sum = els.reduce(function(a, b) { return a + b; });
+          var avg = sum / els.length;
+          return avg
+        }
+      }
+      function adminDeletedStats(objects){
+        deleted_ats = []
+        obj_karmas = []
+        for (var i in objects){
+          if (objects[parseInt(i)]["admin_deleted_at"] != null){
+            deleted_ats.push(objects[parseInt(i)]["admin_deleted_at"])
+            obj_karmas.push(objects[parseInt(i)]["net_karma"])
+          }
+        }
+        return {"pct": deleted_ats.length/objects.length, "avg_time": Math.round((average(deleted_ats)/60/60)*100)/100, "avg_score": average(obj_karmas)}
+      }
+      function userDeletedStats(objects){
+        deleted_ats = []
+        obj_karmas = []
+        for (var i in objects){
+          if (objects[parseInt(i)]["user_deleted_at"] != null){
+            deleted_ats.push(objects[parseInt(i)]["user_deleted_at"])
+            obj_karmas.push(objects[parseInt(i)]["net_karma"])
+          }
+        }
+        return {"pct": deleted_ats.length/objects.length, "avg_time": Math.round((average(deleted_ats)/60/60)*100)/100, "avg_score": average(obj_karmas)}
+      }
+      function getAvgUprates(objects){
+        scores = []
+        for (var i in objects){
+          scores.push(objects[parseInt(i)]["up_rate"])
+        }
+        return average(scores)
+      }
+      function getAvgKarma(objects){
+        scores = []
+        for (var i in objects){
+          scores.push(objects[parseInt(i)]["net_karma"])
+        }
+        return average(scores)
+      }
+      function newChart(chartData, title, target){
+        new tauCharts.Chart({
+          data: chartData,
+          type: 'line',
+          x: 'date',
+          y: 'val',
+          color: 'type',
+          guide: {
+            showAnchors: 'always'
+            interpolate: "smooth-keep-extremum",
+          },
+          plugins: [
+            tauCharts.api.plugins.get('tooltip')()
+          ]
+        }).renderTo('#'+target);
+      }
+      function genTimeline(parsed, timeframe){
+        parsed = jQuery.parseJSON(data);
+        timeframe = "10_minutes_past_day"
+        //timeframe = "24_hours"
+        //arr = []
+        //karmas = []
+        //admin_deletes_pct = []
+        //admin_deletes_avg_time = []
+        //admin_deletes_avg_score = []
+        //user_deletes_pct = []
+        //user_deletes_avg_time = []
+        //user_deletes_avg_score = []
+        //dates = []
+        //for (var key in parsed["content"]["comments"]["map"][timeframe]) {
+        //  var date = new Date(parseInt(key.split(",")[0])*1000);
+        //  date_str = strftime(date, "%Y-%m-%d %H:%M")
+        //  dates.push(date_str)
+        //  comments = getComments(parsed, timeframe, key)
+        //  admin_deletes = adminDeletedStats(comments)
+        //  user_deletes = userDeletedStats(comments)
+        //  admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+        //  admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+        //  admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+        //  user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
+        //  user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
+        //  user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
+        //  karmas.push({date: date_str, val: getAvgKarma(comments)})
+        //}
+        
+      }
       $.get("/api/latest.json", function(data, status){
           parsed = jQuery.parseJSON(data);
           //genChart(parsed, "10_minutes_past_day")
@@ -25,6 +208,7 @@
       
       
       });
+      
     </script>
   </head>
   <body>
@@ -35,55 +219,133 @@
           <p>Monitoring the evolution of the Donald Subreddit</p>
         </div>
       </div>
+
       <div id="24_hours">
-        <div class="row">
-          <div class="col-md-8">
-            .col-md-8
-            <div class="row">
-              <div class="col-md-12"><div id="comments" class="c"></div></div>
-            </div>
-          </div>
-          <div class="col-md-4">.col-md-4</div>
+        <div class="col-md-12">
+          <h3>Past 24 Hours</h3>
         </div>
-      </div>
-      <div id="10_minutes_past_day">
-        <div class="row">
-          <div class="col-md-8">
-            .col-md-8
+        <ul class="nav nav-tabs" id="24hr-tab" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="24hr-comments-tab" data-toggle="tab" href="#24hr-comments" role="tab" aria-controls="24hr-comments" aria-selected="true">Comments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="24hr-submissions-tab" data-toggle="tab" href="#24hr-submissions" role="tab" aria-controls="24hr-submissions" aria-selected="false">Submissions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="24hr-subscriptions-tab" data-toggle="tab" href="#24hr-subscriptions" role="tab" aria-controls="24hr-subscriptions" aria-selected="false">Subscribers</a>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="24hr-comments-tab">
             <div class="row">
-              <div class="col-md-12"><div id="comments" class="c"></div></div>
+              <div class="col-md-8">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_karmas" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_admin_deletes_pct" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_admin_deletes_avg_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_admin_deletes_avg_score" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_user_deletes_pct" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_user_deletes_avg_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="comment_user_deletes_avg_score" class="c chart">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+              </div>
             </div>
           </div>
-          <div class="col-md-4">.col-md-4</div>
-        </div>
-      </div>
-      <div id="subreddit_subscriber_rate">
-        <div class="row">
-          <div class="col-md-8">
-            .col-md-8
+          <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="24hr-submissions-tab">
             <div class="row">
-              <div class="col-md-12"><div id="comments" class="c"></div></div>
+              <div class="col-md-8">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_karmas" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_admin_deletes_pct" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_admin_deletes_avg_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_admin_deletes_avg_score" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_user_deletes_pct" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_user_deletes_avg_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div id="submission_user_deletes_avg_score" class="c chart">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+              </div>
             </div>
           </div>
-          <div class="col-md-4">.col-md-4</div>
+          <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="24hr-subscriptions-tab">
+            ...
+          </div>
         </div>
       </div>
     </div>
   </body>
 </html>
-<!-- new tauCharts.Chart({
-data: data(),
-type: 'line',
-x: 'i',
-y: 'val',
-color: 'type',
-guide: {
-showAnchors: 'always'
-},
-plugins: [
-tauCharts.api.plugins.get('tooltip')()
-]
-}).renderTo('#target');
+
+
 
 
 function data() {
@@ -95,4 +357,4 @@ return [
 {i: 5, val: 5, type: 'B'},
 {i: 10, val: 10, type: 'B'}
 ]
-}-->
+}
