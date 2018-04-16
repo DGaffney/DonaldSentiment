@@ -13,7 +13,6 @@
     
     <style>
     .c {
-    border: solid 1px gray;
     width: 100%;
     height: 100%;
     margin: 0;
@@ -21,7 +20,7 @@
     float: left;
     }
     .chart{
-      height: 80px;
+      height: 120px;
     }
     </style>
     <script>
@@ -200,13 +199,13 @@
           user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
           karmas.push({date: date_str, val: getAvgKarma(comments)})
         }
-        newChart(karmas, "Average Karma", content_type+"_karmas")
-        newChart(admin_deletes_pct, "Mod deletion Percent", content_type+"_admin_deletes_pct")
-        newChart(admin_deletes_avg_time, "Mod time to deletion", content_type+"_admin_deletes_avg_time")
-        newChart(admin_deletes_avg_score, "Average Karma of mod deletion", content_type+"_admin_deletes_avg_score")
-        newChart(user_deletes_pct, "User deletion Percent", content_type+"_user_deletes_pct")
-        newChart(user_deletes_avg_time, "User time to deletion", content_type+"_user_deletes_avg_time")
-        newChart(user_deletes_avg_score, "Average Karma of user deletion", content_type+"_user_deletes_avg_score")
+        newChart(karmas, content_type+"_karmas")
+        newChart(admin_deletes_pct, content_type+"_admin_deletes_pct")
+        newChart(admin_deletes_avg_time, content_type+"_admin_deletes_avg_time")
+        newChart(admin_deletes_avg_score, content_type+"_admin_deletes_avg_score")
+        newChart(user_deletes_pct, content_type+"_user_deletes_pct")
+        newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
+        newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
       }
       $.get("/api/latest.json", function(data, status){
         parsed = jQuery.parseJSON(data);
@@ -244,42 +243,49 @@
               <div class="col-md-8">
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma</h4>
                     <div id="comment_karmas" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Mod deletion Percent</h4>
                     <div id="comment_admin_deletes_pct" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Mod time to deletion</h4>
                     <div id="comment_admin_deletes_avg_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma of mod deletion</h4>
                     <div id="comment_admin_deletes_avg_score" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>User deletion Percent</h4>
                     <div id="comment_user_deletes_pct" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>User time to deletion</h4>
                     <div id="comment_user_deletes_avg_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma of user deletion</h4>
                     <div id="comment_user_deletes_avg_score" class="c chart">
                     </div>
                   </div>
@@ -294,42 +300,49 @@
               <div class="col-md-8">
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma</h4>
                     <div id="submission_karmas" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Mod deletion Percent</h4>
                     <div id="submission_admin_deletes_pct" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Mod time to deletion</h4>
                     <div id="submission_admin_deletes_avg_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma of mod deletion</h4>
                     <div id="submission_admin_deletes_avg_score" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>User deletion Percent</h4>
                     <div id="submission_user_deletes_pct" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>User time to deletion</h4>
                     <div id="submission_user_deletes_avg_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
+                    <h4>Average Karma of user deletion</h4>
                     <div id="submission_user_deletes_avg_score" class="c chart">
                     </div>
                   </div>
