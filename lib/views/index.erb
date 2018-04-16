@@ -174,7 +174,7 @@
         }
         return [].concat.apply([], full_objects)
       }
-      function genCoreCharts(parsed, content_type, timeframe){
+      function genContentCharts(parsed, content_type, timeframe){
         karmas = []
         admin_deletes_pct = []
         admin_deletes_avg_time = []
@@ -225,10 +225,22 @@
         newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
         newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
       }
+      function genSubscriberCharts(parsed){
+        $.each(parsed["data"], function (index, value){
+          var date = new Date(value[0]*1000);
+          date_str = strftime(date, "%Y-%m-%d %H:%M")
+          observed = value[1]["observation"]["content"]["stats"]["subreddit_counts"]
+          {date: date_str, val: observed["subscribers"]}
+        })
+      }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
           parsed = jQuery.parseJSON(data);
-          
+          if (parsed["type"] == "subscribers"){
+            genSubscriberCharts(parsed)
+          } else {
+            genContentCharts(parsed)            
+          }
           g = 1
         });
         

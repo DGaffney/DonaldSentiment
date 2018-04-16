@@ -206,11 +206,17 @@ class Report
       comments: format_comments(db_query(time, :reddit_comments)),
       submissions: format_submissions(db_query(time, :reddit_submissions)),
       authors: db_query(time, :reddit_authors).to_a,
-      subreddit_counts: db_query(time, :subreddit_counts).to_a,
+      subreddit_counts: {raw: db_query(time, :subreddit_counts).to_a.first, diff: subscriber_count_diff(db_query(time, :subreddit_counts).to_a.first, db_query(time-3600, :subreddit_counts).to_a.first)},
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
   
+  def subscriber_count_diff(cur_count, prev_count)
+    {subscriber_count: (cur_count["subscribers"]-prev_count["subscribers"]),
+    active_count: (cur_count["active_users"]-prev_count["active_users"]),
+    active_pct: (cur_count["active_users"].to_f/cur_count["subscribers"]-prev_count["active_users"].to_f/prev_count["subscribers"])}
+  end
+
   def stats
     {
       comments: get_comment_stats,
@@ -229,7 +235,7 @@ class Report
   end
   
   def get_subreddit_count_stats
-    subreddit_count_stats(@raw_data[:subreddit_counts])
+    @raw_data[:subreddit_counts]
   end
 
   def collection_field_query(collection)
