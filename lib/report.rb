@@ -8,6 +8,10 @@ class Report
   def self.latest
     $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute(Time.now)).utc).first
   end
+
+  def self.current
+    $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute(Time.now)).utc).first
+  end
   
   def self.previous
     $client[:stats].find(time: Time.at(TimeDistances.time_ten_minute_previous(Time.now)).utc).first
@@ -250,7 +254,7 @@ class Report
     Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}].to_a
   end
   
-  def self.backfill(latest=Time.at(TimeDistances.time_hour(Time.now)).utc, dist=60*60*24*7, window=60*10)
+  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc, dist=60*60*24*7, window=60*10)
     cursor = latest
     while latest-dist < cursor
       CreateReport.perform_async(cursor.utc)
