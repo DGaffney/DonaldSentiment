@@ -23,7 +23,7 @@ class Report
     elsif content_type == "authors"
       projection = {"time" => 1, "content.stats.authors" => 1}
     elsif content_type == "domains"
-      projection = {"time" => 1, "content.stats.domain_map" => 1}
+      projection = {"time" => 1, "content.stats.domains" => 1}
     end
     projection
   end
