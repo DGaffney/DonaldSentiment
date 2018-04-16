@@ -18,22 +18,23 @@
     }
     </style>
     <script>
-      // $.get("/api/latest.json", function(data, status){
-      //     parsed = jQuery.parseJSON(data);
-      //     genChart(parsed, "10_minutes_past_day")
-      //     genChart(parsed, "24_hours")
-      //
-      //
-      // });
+      $.get("/api/latest.json", function(data, status){
+          parsed = jQuery.parseJSON(data);
+          //genChart(parsed, "10_minutes_past_day")
+          //genChart(parsed, "24_hours")
+      
+      
+      });
     </script>
   </head>
   <body>
-    <h1>Hello World</h1>
-    <p>This HTML code is inside of a '.erb' file in the views directory, where it belongs.</p>
-    <div>
-      
-    </div>
     <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>The Donald Monitor</h1>
+          <p>Monitoring the evolution of the Donald Subreddit</p>
+        </div>
+      </div>
       <div id="24_hours">
         <div class="row">
           <div class="col-md-8">
@@ -46,6 +47,17 @@
         </div>
       </div>
       <div id="10_minutes_past_day">
+        <div class="row">
+          <div class="col-md-8">
+            .col-md-8
+            <div class="row">
+              <div class="col-md-12"><div id="comments" class="c"></div></div>
+            </div>
+          </div>
+          <div class="col-md-4">.col-md-4</div>
+        </div>
+      </div>
+      <div id="subreddit_subscriber_rate">
         <div class="row">
           <div class="col-md-8">
             .col-md-8
