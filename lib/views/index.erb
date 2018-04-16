@@ -156,10 +156,13 @@
           type: 'line',
           x: 'date',
           y: 'val',
-          color: 'type',
+          color: 'relative_value',
           guide: {
             showAnchors: 'always',
-            interpolate: "smooth-keep-extremum"
+            interpolate: "smooth-keep-extremum",
+            color: {
+              brewer: { higher: '#28a745', lower: '#dc3545', similar: '#17a2b8' }
+            }
           },
           plugins: [
             tauCharts.api.plugins.get('tooltip')()
@@ -174,57 +177,6 @@
         }
         return [].concat.apply([], full_objects)
       }
-      function genContentCharts(parsed, content_type, timeframe){
-        karmas = []
-        admin_deletes_pct = []
-        admin_deletes_avg_time = []
-        admin_deletes_avg_score = []
-        user_deletes_pct = []
-        user_deletes_avg_time = []
-        user_deletes_avg_score = []
-        dates = []
-        vals = []
-        $.each( parsed, function( index, value ){
-          var date = new Date(value[0]*1000);
-          date_str = strftime(date, "%Y-%m-%d %H:%M")
-          dates.push(date_str)
-          objects = value[1]["observation"]["content"][content_type]
-          reference_objects = value[1]["reference"]["content"][content_type]
-          reference_comments = getReferenceObjects(parsed, content_type)
-          admin_deletes = adminDeletedStats(comments, reference_comments)
-          user_deletes = userDeletedStats(comments, reference_comments)
-          admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-          admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-          admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-          user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-          user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-          user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-          karmas.push({date: date_str, val: getAvgKarma(comments, reference_comments)})
-        });
-        for (var key in parsed["content"][content_type]["map"][timeframe]) {
-          var date = new Date(parseInt(key.split(",")[0])*1000);
-          date_str = strftime(date, "%Y-%m-%d %H:%M")
-          dates.push(date_str)
-          comments = getObjects(parsed, content_type, timeframe, key)
-          reference_comments = getReferenceObjects(parsed, content_type)
-          admin_deletes = adminDeletedStats(comments, reference_comments)
-          user_deletes = userDeletedStats(comments, reference_comments)
-          admin_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-          admin_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-          admin_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-          user_deletes_pct.push({date: date_str, val: admin_deletes["pct"]})
-          user_deletes_avg_time.push({date: date_str, val: admin_deletes["avg_time"]})
-          user_deletes_avg_score.push({date: date_str, val: admin_deletes["avg_score"]})
-          karmas.push({date: date_str, val: getAvgKarma(comments, reference_comments)})
-        }
-        newChart(karmas, content_type+"_karmas")
-        newChart(admin_deletes_pct, content_type+"_admin_deletes_pct")
-        newChart(admin_deletes_avg_time, content_type+"_admin_deletes_avg_time")
-        newChart(admin_deletes_avg_score, content_type+"_admin_deletes_avg_score")
-        newChart(user_deletes_pct, content_type+"_user_deletes_pct")
-        newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
-        newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
-      }
       function genSubscriberCharts(parsed){
         $.each(parsed["data"], function (index, value){
           var date = new Date(value[0]*1000);
@@ -233,13 +185,70 @@
         //  {date: date_str, val: observed["subscribers"]}
         })
       }
+      function dataPointWithReference(observed, reference, data_key, date){
+        scores = []
+        $.each(reference, function (ii,vv){
+          scores.push(vv[data_key])
+        })
+        var relative_value = "similar";
+        if (average(scores) > observed[data_key]+observed[data_key]*0.25){
+          relative_value = "lower"          
+        } else if (average(scores) < observed[data_key]-observed[data_key]*0.25){
+          relative_value = "higher"
+        }
+        return {date: date, value: observed[data_key], relative_value: relative_value}
+      }
+      function genContentCharts(parsed, content_type){
+        count = []
+        author_count = []
+        admin_deleted_count = []
+        admin_deleted_time = []
+        admin_admin_karma_deletion = []
+        user_deleted_count = []
+        user_deleted_time = []
+        user_admin_karma_deletion = []
+        $.each(parsed["data"], function (index, value){
+          var date = new Date(value[0]*1000);
+          date_str = strftime(date, "%Y-%m-%d %H:%M")
+          observed = value[1]["observation"]["content"]["stats"][content_type]
+          reference = []
+          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
+            reference.push(i_value["content"]["stats"][content_type])
+          })
+          dataPointWithReference(observed, reference, data_key)
+          count.push(dataPointWithReference(observed, reference, "count", date))
+          author_count.push(dataPointWithReference(observed, reference, "author_count", date))
+          admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
+          admin_deleted_time.push(dataPointWithReference(observed, reference, "admin_deleted_time", date))
+          admin_admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_admin_karma_deletion", date))
+          user_deleted_count.push(dataPointWithReference(observed, reference, "user_deleted_count", date))
+          user_deleted_time.push(dataPointWithReference(observed, reference, "user_deleted_time", date))
+          user_admin_karma_deletion.push(dataPointWithReference(observed, reference, "user_admin_karma_deletion", date))
+        })
+        newChart(karmas, content_type+"_karmas")
+        newChart(admin_deletes_pct, content_type+"_admin_deletes_pct")
+        newChart(admin_deletes_avg_time, content_type+"_admin_deletes_avg_time")
+        newChart(admin_deletes_avg_score, content_type+"_admin_deletes_avg_score")
+        newChart(user_deletes_pct, content_type+"_user_deletes_pct")
+        newChart(user_deletes_avg_time, content_type+"_user_deletes_avg_time")
+        newChart(user_deletes_avg_score, content_type+"_user_deletes_avg_score")
+        
+        newChart(count, content_type+"_count")
+        newChart(author_count, content_type+"_author_count")
+        newChart(admin_deleted_count, content_type+"_admin_deleted_count")
+        newChart(admin_deleted_time, content_type+"_admin_deleted_time")
+        newChart(admin_admin_karma_deletion, content_type+"_admin_admin_karma_deletion")
+        newChart(user_deleted_count, content_type+"_user_deleted_count")
+        newChart(user_deleted_time, content_type+"_user_deleted_time")
+        newChart(user_admin_karma_deletion, content_type+"_user_admin_karma_deletion")
+      }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
           parsed = jQuery.parseJSON(data);
           if (parsed["type"] == "subscribers"){
             genSubscriberCharts(parsed)
           } else {
-            genContentCharts(parsed)            
+            genContentCharts(parsed)
           }
           g = 1
         });
@@ -276,50 +285,57 @@
               <div class="col-md-8">
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma</h4>
-                    <div id="comment_karmas" class="c chart">
+                    <h4>Count</h4>
+                    <div id="comment_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Mod deletion Percent</h4>
-                    <div id="comment_admin_deletes_pct" class="c chart">
+                    <h4>Author Count</h4>
+                    <div id="comment_author_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Mod time to deletion</h4>
-                    <div id="comment_admin_deletes_avg_time" class="c chart">
+                    <h4>Number of Admin deletions</h4>
+                    <div id="comment_admin_deleted_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma of mod deletion</h4>
-                    <div id="comment_admin_deletes_avg_score" class="c chart">
+                    <h4>Amount of time before Admin deletions</h4>
+                    <div id="comment_admin_deleted_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>User deletion Percent</h4>
-                    <div id="comment_user_deletes_pct" class="c chart">
+                    <h4>Net Karma of Admin deletions</h4>
+                    <div id="comment_admin_karma_deletion" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>User time to deletion</h4>
-                    <div id="comment_user_deletes_avg_time" class="c chart">
+                    <h4>Number of User deletions</h4>
+                    <div id="comment_user_deleted_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma of user deletion</h4>
-                    <div id="comment_user_deletes_avg_score" class="c chart">
+                    <h4>Amount of time before User deletions</h4>
+                    <div id="comment_user_deleted_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <h4>Net Karma of User deletions</h4>
+                    <div id="comment_user_karma_deletion" class="c chart">
                     </div>
                   </div>
                 </div>
@@ -333,50 +349,57 @@
               <div class="col-md-8">
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma</h4>
-                    <div id="submission_karmas" class="c chart">
+                    <h4>Count</h4>
+                    <div id="submission_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Mod deletion Percent</h4>
-                    <div id="submission_admin_deletes_pct" class="c chart">
+                    <h4>Author Count</h4>
+                    <div id="submission_author_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Mod time to deletion</h4>
-                    <div id="submission_admin_deletes_avg_time" class="c chart">
+                    <h4>Number of Admin deletions</h4>
+                    <div id="submission_admin_deleted_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma of mod deletion</h4>
-                    <div id="submission_admin_deletes_avg_score" class="c chart">
+                    <h4>Amount of time before Admin deletions</h4>
+                    <div id="submission_admin_deleted_time" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>User deletion Percent</h4>
-                    <div id="submission_user_deletes_pct" class="c chart">
+                    <h4>Net Karma of Admin deletions</h4>
+                    <div id="submission_admin_karma_deletion" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>User time to deletion</h4>
-                    <div id="submission_user_deletes_avg_time" class="c chart">
+                    <h4>Number of User deletions</h4>
+                    <div id="submission_user_deleted_count" class="c chart">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <h4>Average Karma of user deletion</h4>
-                    <div id="submission_user_deletes_avg_score" class="c chart">
+                    <h4>Amount of time before User deletions</h4>
+                    <div id="submission_user_deleted_time" class="c chart">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <h4>Net Karma of User deletions</h4>
+                    <div id="submission_user_karma_deletion" class="c chart">
                     </div>
                   </div>
                 </div>
@@ -393,17 +416,3 @@
     </div>
   </body>
 </html>
-
-
-
-
-function data() {
-return [
-{i: 0, val: 10, type: 'A'},
-{i: 5, val: 20, type: 'A'},
-{i: 10, val: 15, type: 'A'},
-{i: 0, val: 15, type: 'B'},
-{i: 5, val: 5, type: 'B'},
-{i: 10, val: 10, type: 'B'}
-]
-}
