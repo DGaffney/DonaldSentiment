@@ -203,9 +203,8 @@
           if (observed_raw != null){
             score = dataPointWithReference(observed_raw, reference_raw, "active_users", date)
             if (Math.abs(score["value"]) > 100){
-              sub_count.push(score)              
+              active_count.push(score)              
             }
-            active_count.push(score)
           }
         })
         newChart(active_count, "active_count")
