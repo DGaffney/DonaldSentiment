@@ -291,7 +291,13 @@
         <div class="col-md-12">
           <h1>The Donald Monitor</h1>
           <p>Monitoring the evolution of the Donald Subreddit</p>
-          <a href="">
+          <% if @time > Time.now.utc.to_i-60*60*24 %>
+            <a href="/?time=<%= @time.to_i-60*60*24 %>">Back one day</a>
+          <% elsif @time < Time.now.utc.to_i-60*60*24*7*4 %>
+            <a href="/?time=<%= @time.to_i+60*60*24 %>">Forward one day</a>
+          <% else %>
+            <a href="/?time=<%= @time.to_i-60*60*24 %>">Back one day</a> | <a href="/?time=<%= @time.to_i+60*60*24 %>">Forward one day</a>
+          <% end %>
         </div>
       </div>
       <div class="row">
