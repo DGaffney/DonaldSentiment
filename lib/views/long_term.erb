@@ -158,12 +158,10 @@
         newChart(author_deleted_time, content_type+"_author_deleted_time")
         newChart(author_karma_deletion, content_type+"_author_karma_deletion")
       }
-        $.get("/api/long_term_trends.json", function(data, status){
-          parsed = jQuery.parseJSON(data);
-          g = 1
-        });
-        
-      })
+      $.get("/api/long_term_trends.json", function(data, status){
+        parsed = jQuery.parseJSON(data);
+        g = 1
+      });
     </script>
   </head>
   <body>
