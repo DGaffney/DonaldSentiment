@@ -132,9 +132,7 @@ class Report
 
   def format_comments(query)
     objects = []
-    comms = []
     query.collect do |comment|
-    comms << comment
       sorted_updates = (comment["updated_info"]||[]).sort_by{|x| x["delay"].to_i}
       latest_update = sorted_updates.last || {}
       scored = sorted_updates.collect{|x| [x["ups"]||0, x["delay"]||0]}.reject{|x| x[1] > 1800}
