@@ -168,7 +168,7 @@
           for (var site_type in scores["observed"]["content"]["url_stats"]){
             date_timeline[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["count"]/total_count
             date_timeline_comment_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["num_comment_count"]/total_comment_count
-            date_timeline_karma_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["karma_count"]
+            date_timeline_karma_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["karma_count"]/total_karma_count
           }
         }
         data = []
