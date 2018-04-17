@@ -177,11 +177,29 @@
         return [].concat.apply([], full_objects)
       }
       function genSubscriberCharts(parsed){
+        active_count = []
+        sub_count = []
+        values = []
         $.each(parsed["data"], function (index, value){
           var date = new Date(value[0]*1000);
+          values.push(value)
           date_str = strftime(date, "%Y-%m-%d %H:%M")
-          observed = value[1]["observation"]["content"]["stats"]["subreddit_counts"]
-        //  {date: date_str, val: observed["subscribers"]}
+          observed_diff = value[1]["observation"]["content"]["stats"]["subreddit_counts"]["diff"]
+          reference_diff = []
+          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
+            reference_diff.push(i_value["content"]["stats"]["subreddit_counts"]["diff"])
+          })
+          observed_raw = value[1]["observation"]["content"]["stats"]["subreddit_counts"]["raw"]
+          reference_raw = []
+          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
+            reference_raw.push(i_value["content"]["stats"]["subreddit_counts"]["raw"])
+          })
+          if (observed_diff != null){
+            sub_count.push(dataPointWithReference(observed_diff, reference_diff, "subscriber_count", date))
+          }
+          if (observed_raw != null){
+            active_count.push(dataPointWithReference(observed_raw, reference_raw, "active_users", date))            
+          }
         })
       }
       function dataPointWithReference(observed, reference, data_key, date){
@@ -481,7 +499,22 @@
         <div class="col-md-6">
           <div class="row">
             <div class="col-md-12">
-              <h4>Comments</h4>
+              <h3>Domains Shared</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div id="domain_shared_map" class="c chart">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div id="domain_shared_map_comment_scaled" class="c chart">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div id="domain_shared_map_karma_scaled" class="c chart">
             </div>
           </div>
         </div>
