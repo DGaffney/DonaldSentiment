@@ -1,5 +1,9 @@
 class LongTermReport
   include Sidekiq::Worker
+#  def self.report
+#    full_stats = Hash[$client[:day_stats].find.collect{|x| [Time.at(x["start_time"]), x]}]
+#  end
+
   def perform(day)
     start_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 00:00:00 +0000")).utc.to_i
     end_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 23:59:59 +0000")).utc.to_i
@@ -30,7 +34,12 @@ class LongTermReport
       host_num_counts[host] += submission[:comment_count]
       host_karma_counts[host] += submission[:net_karma]
     end
-    Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
+    category_counts = {}
+    categories = Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).projection(category: 1, domain: 1).collect{|x| [x["domain"], x["category"]||"uncategorized"]}]
+    host_counts.keys.each do |domain|
+      category_counts[categories[domain]] = {count: host_counts[domain], num_comment_count: host_num_counts[domain], karma_count: host_karma_counts[domain]}
+    end
+    category_counts
   end
   
   def self.kickoff(earliest_day = Time.at(1448990666))
