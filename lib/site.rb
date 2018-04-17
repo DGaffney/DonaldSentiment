@@ -12,4 +12,8 @@ class Site < Sinatra::Base
     end
     erb :index
   end
+
+  get '/long_term' do
+    erb :long_term
+  end
 end

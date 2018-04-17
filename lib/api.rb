@@ -43,4 +43,8 @@ class Site < Sinatra::Base
     "subscribers" => :time}[params[:model]]
     return $client[model].find({time_param => {"$gte" => params[:start_time].to_i}}, {:sort => ['created_utc',1]}).first(100).to_json
   end
+  
+  get "/api/long_term_trends.json" do
+    LongTermReport.report.to_json
+  end
 end
