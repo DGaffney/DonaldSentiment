@@ -149,7 +149,7 @@ class Report
     objects = []
     query.collect do |submission|
       submission["updated_info"] ||= []
-      submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0}
+      submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0} if submission["updated_info"].empty?
       sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
       scored = sorted_updates.collect{|x| [x["ups"]||0, x["delay"]||0]}.reject{|x| x[1] > 1800}
@@ -285,7 +285,7 @@ class Report
     Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
   end
  
-  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7*4, window=60*10)
+  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7, window=60*10)
     cursor = latest
     while latest-dist < cursor
       CreateReport.perform_async(cursor)
