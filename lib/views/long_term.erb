@@ -171,6 +171,48 @@
             date_timeline_karma_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["karma_count"]
           }
         }
+        data = []
+        data_comment_scaled = []
+        data_karma_scaled = []
+        for (var date_key in date_timeline) {
+          $.each(["administration", "conservative_news", "facebook", "google", "image", "news", "other", "screenshot_site", "selftext", "tweet", "video", "wikipedia"], function (index, content_type){
+            if (isNaN(date_timeline[date_key][content_type]) == false){
+              data.push({type: content_type, date: date_key, value: date_timeline[date_key][content_type]})
+              data_comment_scaled.push({type: content_type, date: date_key, value: date_timeline_comment_scaled[date_key][content_type]})
+              data_karma_scaled.push({type: content_type, date: date_key, value: date_timeline_karma_scaled[date_key][content_type]})
+            }            
+          })
+        }
+        new tauCharts.Chart({
+            type: 'stacked-bar',
+            x: 'date',
+            y: 'value',
+            color: 'type',
+            data: data,
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+        }).renderTo('#domain_shared_map');
+        new tauCharts.Chart({
+            type: 'stacked-bar',
+            x: 'date',
+            y: 'value',
+            color: 'type',
+            data: data_comment_scaled,
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+        }).renderTo('#domain_shared_map_comment_scaled');
+        new tauCharts.Chart({
+            type: 'stacked-bar',
+            x: 'date',
+            y: 'value',
+            color: 'type',
+            data: data_karma_scaled,
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+        }).renderTo('#domain_shared_map_karma_scaled');
       }
       function genContentCharts(parsed){
         var core_metrics = {"comments_admin_deleted_count": [], "comments_admin_deleted_time": [], "comments_admin_karma_deletion": [], "comments_admin_karma_deletion_speed": [], "comments_author_deleted_count": [], "comments_author_deleted_time": [], "comments_author_karma_deletion": [], "comments_author_karma_deletion_speed": [], "comments_count": [], "comments_distinct_admin_deleted_count": [], "comments_distinct_author_deleted_count": [], "comments_distinct_count": [], "submissions_admin_deleted_count": [], "submissions_admin_deleted_time": [], "submissions_admin_karma_deletion": [], "submissions_admin_karma_deletion_speed": [], "submissions_author_deleted_count": [], "submissions_author_deleted_time": [], "submissions_author_karma_deletion": [], "submissions_author_karma_deletion_speed": [], "submissions_count": [], "submissions_distinct_admin_deleted_count": [], "submissions_distinct_author_deleted_count": [], "submissions_distinct_count": [], "subscriber_counts": [], "avg_active_pct": []}
@@ -207,6 +249,11 @@
       </div>
       <div class="row">
         <div class="col-md-12">
+          <h2>Core Statistics</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
           <h3>Daily Comments</h3>
           <div id="comments_count" class="c chart"></div>
         </div>
@@ -239,6 +286,34 @@
         <div class="col-md-12">
           <h3>Average Percent of Subscribers online</h3>
           <div id="avg_active_pct" class="c chart"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h2>Content Sources</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Number of Submissions by link category</h3>
+          <div id="domain_shared_map" class="c chart"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Number of Submissions by link category, scaled by comment count</h3>
+          <div id="domain_shared_map_comment_scaled" class="c chart"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Number of Submissions by link category, scaled by karma count</h3>
+          <div id="domain_shared_map_karma_scaled" class="c chart"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h2>Secondary Statistics</h1>
         </div>
       </div>
       <div class="row">
