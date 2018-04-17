@@ -172,22 +172,6 @@
         <div class="col-md-12">
           <h1>The Donald Monitor</h1>
           <p>Monitoring the evolution of the Donald Subreddit</p>
-          <p>
-            <% if @time > Time.now.utc.to_i-60*60*24 %>
-              <a href="/?time=<%= @time.to_i-60*60*24 %>&distance=<%= @distance %>">Back one day</a>
-            <% elsif @time < Time.now.utc.to_i-60*60*24*7*4 %>
-              <a href="/?time=<%= @time.to_i+60*60*24 %>&distance=<%= @distance %>">Forward one day</a>
-            <% elsif !(@time > Time.now.utc.to_i-60*60*24) && !(@time < Time.now.utc.to_i-60*60*24*7*4)%>
-              <a href="/?time=<%= @time.to_i-60*60*24 %>&distance=<%= @distance %>">Back one day</a> | <a href="/?time=<%= @time.to_i+60*60*24 %>&distance=<%= @distance %>">Forward one day</a>
-            <% end %>
-          </p>
-          <p>
-            <% if @distance > 1 %>
-              <a href="/?time=<%= @time.to_i %>&distance=<%= @distance-1 %>">Remove a day from Window</a> | 
-            <% end %>
-              <a href="/?time=<%= @time.to_i %>&distance=<%= @distance+1 %>">Add a day to Window</a>
-          </p>
-          <h3>Currently viewing 24 hours preceding <%= Time.at(@time).utc %></h3>
         </div>
       </div>
       <div class="row">
