@@ -240,21 +240,31 @@
       }
       function genDomainCharts(parsed){
         date_timeline = {}
+        date_timeline_comment_scaled = {}
+        date_timeline_karma_scaled = {}
         $.each(parsed["data"], function (index, value){
           var date = new Date(value[0]*1000);
           date_str = strftime(date, "%Y-%m-%d %H:00")
           if (date_timeline[date_str] == null){
             date_timeline[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0}
+            date_timeline_comment_scaled[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0}
+            date_timeline_karma_scaled[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0}
           }
           $.each(value[1]["observation"]["content"]["stats"]["domains"], function(iindex, vvalue){
             date_timeline[date_str][vvalue[1]["category"]] += vvalue[1]["current_count"]
+            date_timeline_comment_scaled[date_str][vvalue[1]["category"]] += vvalue[1]["num_comment_count"]
+            date_timeline_karma_scaled[date_str][vvalue[1]["category"]] += vvalue[1]["karma_count"]
           })
         })
         data = []
+        data_comment_scaled = []
+        data_karma_scaled = []
         for (var date_key in date_timeline) {
           $.each(["administration", "conservative_news", "facebook", "google", "image", "news", "other", "screenshot_site", "selftext", "tweet", "video", "wikipedia"], function (index, content_type){
             if (isNaN(date_timeline[date_key][content_type]) == false){
               data.push({type: content_type, date: date_key, value: date_timeline[date_key][content_type]})
+              data_comment_scaled.push({type: content_type, date: date_key, value: date_timeline_comment_scaled[date_key][content_type]})
+              data_karma_scaled.push({type: content_type, date: date_key, value: date_timeline_karma_scaled[date_key][content_type]})
             }            
           })
         }
@@ -268,6 +278,26 @@
               tauCharts.api.plugins.get('tooltip')()
             ]
         }).renderTo('#domain_shared_map');
+        new tauCharts.Chart({
+            type: 'stacked-bar',
+            x: 'date',
+            y: 'value',
+            color: 'type',
+            data: data_comment_scaled,
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+        }).renderTo('#domain_shared_map_comment_scaled');
+        new tauCharts.Chart({
+            type: 'stacked-bar',
+            x: 'date',
+            y: 'value',
+            color: 'type',
+            data: data_karma_scaled,
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+        }).renderTo('#domain_shared_map_karma_scaled');
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/<%= @time %>/"+value+"/reduced.json", function(data, status){
@@ -430,7 +460,21 @@
           <div class="row">
             <div class="col-md-12">
               <h3>Domains Shared</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
               <div id="domain_shared_map" class="c chart">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div id="domain_shared_map_comment_scaled" class="c chart">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div id="domain_shared_map_karma_scaled" class="c chart">
             </div>
           </div>
         </div>
