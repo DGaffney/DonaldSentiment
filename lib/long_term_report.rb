@@ -1,5 +1,5 @@
 class LongTermReport
-  include Sidekiq::Queue
+  include Sidekiq::Worker
   def perform(day)
     start_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 00:00:00 +0000")).utc.to_i
     end_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 23:59:59 +0000")).utc.to_i
