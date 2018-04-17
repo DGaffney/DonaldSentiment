@@ -123,40 +123,36 @@
           ]
         }).renderTo('#'+target);
       }
+      function genRow(scores, metric, date){
+        if (scores["reference"]!= null){
+          if (scores["observed"]["content"]["core_stats"][metric]-scores["observed"]["content"]["core_stats"][metric]*0.15 > scores["reference"]["content"]["core_stats"][metric]) {
+            return {date: date, value: scores["observed"]["content"]["core_stats"][metric], relative_value: "higher"}
+          } else if (scores["observed"]["content"]["core_stats"][metric]+scores["observed"]["content"]["core_stats"][metric]*0.15 < scores["reference"]["content"]["core_stats"][metric]) {
+            return {date: date, value: scores["observed"]["content"]["core_stats"][metric], relative_value: "lower"}
+          } else {
+            return {date: date, value: scores["observed"]["content"]["core_stats"][metric], relative_value: "similar"}            
+          }
+        }
+      }
+      function genURLRow(data, key){
+        
+      }
       function genContentCharts(parsed, content_type){
-        count = []
-        author_count = []
-        admin_deleted_count = []
-        admin_deleted_time = []
-        admin_karma_deletion = []
-        author_deleted_count = []
-        author_deleted_time = []
-        author_karma_deletion = []
-        $.each(parsed["data"], function (index, value){
-          var date = new Date(value[0]*1000);
-          date_str = strftime(date, "%Y-%m-%d %H:%M")
-          observed = value[1]["observation"]["content"]["stats"][content_type]
-          reference = []
-          $.each(value[1]["reference"]["prev_month"], function (i_index, i_value){
-            reference.push(i_value["content"]["stats"][content_type])
-          })
-          count.push(dataPointWithReference(observed, reference, "count", date))
-          author_count.push(dataPointWithReference(observed, reference, "distinct_count", date))
-          admin_deleted_count.push(dataPointWithReference(observed, reference, "admin_deleted_count", date))
-          admin_deleted_time.push(dataPointWithReference(observed, reference, "admin_deleted_time", date))
-          admin_karma_deletion.push(dataPointWithReference(observed, reference, "admin_karma_deletion", date))
-          author_deleted_count.push(dataPointWithReference(observed, reference, "author_deleted_count", date))
-          author_deleted_time.push(dataPointWithReference(observed, reference, "author_deleted_time", date))
-          author_karma_deletion.push(dataPointWithReference(observed, reference, "author_karma_deletion", date))
-        })
-        newChart(count, content_type+"_count")
-        newChart(author_count, content_type+"_author_count")
-        newChart(admin_deleted_count, content_type+"_admin_deleted_count")
-        newChart(admin_deleted_time, content_type+"_admin_deleted_time")
-        newChart(admin_karma_deletion, content_type+"_admin_karma_deletion")
-        newChart(author_deleted_count, content_type+"_author_deleted_count")
-        newChart(author_deleted_time, content_type+"_author_deleted_time")
-        newChart(author_karma_deletion, content_type+"_author_karma_deletion")
+        var core_metrics = {"comments_admin_deleted_count": [], "comments_admin_deleted_time": [], "comments_admin_karma_deletion": [], "comments_admin_karma_deletion_speed": [], "comments_author_deleted_count": [], "comments_author_deleted_time": [], "comments_author_karma_deletion": [], "comments_author_karma_deletion_speed": [], "comments_count": [], "comments_distinct_admin_deleted_count": [], "comments_distinct_author_deleted_count": [], "comments_distinct_count": [], "submissions_admin_deleted_count": [], "submissions_admin_deleted_time": [], "submissions_admin_karma_deletion": [], "submissions_admin_karma_deletion_speed": [], "submissions_author_deleted_count": [], "submissions_author_deleted_time": [], "submissions_author_karma_deletion": [], "submissions_author_karma_deletion_speed": [], "submissions_count": [], "submissions_distinct_admin_deleted_count": [], "submissions_distinct_author_deleted_count": [], "submissions_distinct_count": [], "subscriber_counts": [], "avg_active_pct": []}
+        for (var date_str in parsed) {
+          var date = new Date(Date.parse(date_str));
+          scores = parsed[date_str]
+          out_date_str = strftime(date, "%Y-%m-%d")
+          for (var metric in core_metrics){
+            row = genRow(scores, metric, date)
+            if (row != null){
+              core_metrics[metric].push(row)
+            }
+          }
+        }
+        for (var metric in core_metrics){
+          newChart(core_metrics[metric], metric)
+        }
       }
       $.get("/api/long_term_trends.json", function(data, status){
         parsed = jQuery.parseJSON(data);
@@ -173,201 +169,137 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6">
-          <div class="row">
-            <div class="col-md-12">
-              <h3>Comments</h3>
-            </div>
-            <div class="col-md-12">
-              <h4>Count</h4>
-              <div id="comments_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Author Count</h4>
-              <div id="comments_author_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Number of Admin deletions</h4>
-              <div id="comments_admin_deleted_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Amount of time before Admin deletions</h4>
-              <div id="comments_admin_deleted_time" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Net Karma of Admin deletions</h4>
-              <div id="comments_admin_karma_deletion" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Number of User deletions</h4>
-              <div id="comments_author_deleted_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Amount of time before User deletions</h4>
-              <div id="comments_author_deleted_time" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Net Karma of User deletions</h4>
-              <div id="comments_author_karma_deletion" class="c chart">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="row">
-            <div class="col-md-12">
-              <h3>Submissions</h3>
-            </div>
-            <div class="col-md-12">
-              <h4>Count</h4>
-              <div id="submissions_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Author Count</h4>
-              <div id="submissions_author_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Number of Admin deletions</h4>
-              <div id="submissions_admin_deleted_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Amount of time before Admin deletions</h4>
-              <div id="submissions_admin_deleted_time" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Net Karma of Admin deletions</h4>
-              <div id="submissions_admin_karma_deletion" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Number of User deletions</h4>
-              <div id="submissions_author_deleted_count" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Amount of time before User deletions</h4>
-              <div id="submissions_author_deleted_time" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Net Karma of User deletions</h4>
-              <div id="submissions_author_karma_deletion" class="c chart">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="row">
-            <div class="col-md-12">
-              <h3>Domains Shared</h3>
-              <p>What types of domains are users linking to?</p>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Post counts by link type</h4>
-              <div id="domain_shared_map" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Comment counts by link type</h4>
-              <div id="domain_shared_map_comment_scaled" class="c chart">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Karma counts by link type</h4>
-              <div id="domain_shared_map_karma_scaled" class="c chart">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="row">
-            <div class="col-md-12">
-              <h3>Subscriber Activity</h3>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>Online users</h4>
-              <div id="active_count" class="c chart">
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h4>New Subscribers per hour</h4>
-              <div id="subscriber_counts" class="c chart">
-            </div>
-          </div>
+        <div class="col-md-12">
+          <div id="comments_count"></div>
         </div>
       </div>
       <div class="row">
         <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-12">
-              <h3>API</h3>
-              <h5>Report Data</h5>
-              <p><b>/api/latest/:content_type/reduced.json?distance=:distance</b> Get only descriptive statistics for latest report - reports are generated every ten minutes.</p> 
-              <p><b>/api/latest/:content_type/full.json?distance=:distance</b>  Get descriptive statistics and raw comments/submissions for latest report - reports are generated every ten minutes.</p>
-              <p><b>/api/:timestamp/:content_type/reduced.json?distance=:distance</b> Get only descriptive statistics for report closest to provided epoch timestamp - reports are generated every ten minutes.</p>
-              <p><b>/api/:timestamp/:content_type/full.json?distance=:distance</b> Get descriptive statistics and raw comments/submissions for report closest to provided epoch timestamp - reports are generated every ten minutes.</p>
-              <p><b>/api/:timestamp/:content_type/full.json?distance=:distance</b> Get descriptive statistics and raw comments/submissions for report closest to provided epoch timestamp - reports are generated every ten minutes.</p>
-              <h5>Raw Data</h5>
-              <p><b>/api/:model/:start_time.json</b> Return first 100 objects created after :start_time epoch timestamp. First object is oldest, last is newest. valid :model's are "submissions", "comments", or "subscribers".</p>
-              <h4>Options</h4>
-              <p><b>:content_type</b>: Can be "comments", "submissions", "subscribers", or "domains"</p>
-              <p><b>:timestamp</b>: Can be any epoch timestamp such as <%= Time.now.utc.to_i %> to represent <%= Time.now.utc %>. Note that data before April 2018 was not collected live, so tables may be less representative.</p>
-              <p><b>:distance</b>: Integer, distance in days for how far back the window of viewing should be.</p>
-              
-            </div>
-          </div>
+          <div id="submissions_count"></div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="subscriber_counts"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="avg_active_pct"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_admin_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_admin_deleted_time"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_admin_karma_deletion"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_admin_karma_deletion_speed"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_author_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_author_deleted_time"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_author_karma_deletion"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_author_karma_deletion_speed"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_distinct_admin_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_distinct_author_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="comments_distinct_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_admin_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_admin_deleted_time"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_admin_karma_deletion"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_admin_karma_deletion_speed"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_author_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_author_deleted_time"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_author_karma_deletion"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_author_karma_deletion_speed"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_distinct_admin_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_distinct_author_deleted_count"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="submissions_distinct_count"></div>
+        </div>
+      </div>
+      
+      
     </div>
   </body>
 </html>
