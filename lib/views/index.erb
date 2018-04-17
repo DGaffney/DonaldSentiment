@@ -270,7 +270,7 @@
         }).renderTo('#domain_shared_map');
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
-        $.get("/api/latest/"+value+"/reduced.json", function(data, status){
+        $.get("/api/<%= @time %>/"+value+"/reduced.json", function(data, status){
           parsed = jQuery.parseJSON(data);
           if (parsed["type"] == "subscribers"){
             genSubscriberCharts(parsed)
@@ -291,6 +291,7 @@
         <div class="col-md-12">
           <h1>The Donald Monitor</h1>
           <p>Monitoring the evolution of the Donald Subreddit</p>
+          <a href="">
         </div>
       </div>
       <div class="row">
