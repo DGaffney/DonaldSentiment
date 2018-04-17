@@ -6,15 +6,31 @@ class Site < Sinatra::Base
   end
 
   get "/api/latest/:content_type/reduced.json" do
-    return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], true).sort_by{|k,v| k}}.to_json
+    params[:distance] = params[:distance].nil? ? 60*60*24 : params[:distance].to_i*60*60*24
+    return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], true, params[:distance]).sort_by{|k,v| k}}.to_json
   end
 
   get "/api/:timestamp/:content_type/reduced.json" do
+    params[:distance] = params[:distance].nil? ? 60*60*24 : params[:distance].to_i*60*60*24
     if params[:timestamp] == "latest"
-      return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], true).sort_by{|k,v| k}}.to_json
+      return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], true, params[:distance]).sort_by{|k,v| k}}.to_json
     else
-      return {type: params[:content_type], data: Report.report(Time.at(params[:timestamp].to_i), params[:content_type], true).sort_by{|k,v| k}}.to_json
+      return {type: params[:content_type], data: Report.report(Time.at(params[:timestamp].to_i), params[:content_type], true, params[:distance]).sort_by{|k,v| k}}.to_json
     end
     
+  end
+
+  get "/api/latest/:content_type/full.json" do
+    params[:distance] = params[:distance].nil? ? 60*60*24 : params[:distance].to_i*60*60*24
+    return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], false, params[:distance]).sort_by{|k,v| k}}.to_json
+  end
+
+  get "/api/:timestamp/:content_type/full.json" do
+    params[:distance] = params[:distance].nil? ? 60*60*24 : params[:distance].to_i*60*60*24
+    if params[:timestamp] == "latest"
+      return {type: params[:content_type], data: Report.report(Time.now, params[:content_type], false, params[:distance]).sort_by{|k,v| k}}.to_json
+    else
+      return {type: params[:content_type], data: Report.report(Time.at(params[:timestamp].to_i), params[:content_type], false, params[:distance]).sort_by{|k,v| k}}.to_json
+    end
   end
 end
