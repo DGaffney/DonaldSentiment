@@ -36,8 +36,8 @@ class LongTermReport
       host_num_counts[host] ||= 0
       host_karma_counts[host] ||= 0
       host_counts[host] += 1
-      host_num_counts[host] += submission[:comment_count]
-      host_karma_counts[host] += submission[:net_karma]
+      host_num_counts[host] += submission[:comment_count].to_f
+      host_karma_counts[host] += submission[:net_karma].to_f
     end
     category_counts = {}
     categories = Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).projection(category: 1, domain: 1).collect{|x| [x["domain"], x["category"]||"uncategorized"]}]
