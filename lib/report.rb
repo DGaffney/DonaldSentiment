@@ -212,9 +212,10 @@ class Report
   end
   
   def subscriber_count_diff(cur_count, prev_count)
+    active_pct = (cur_count["active_users"].to_f/cur_count["subscribers"]-prev_count["active_users"].to_f/prev_count["subscribers"])
     {subscriber_count: (cur_count["subscribers"]-prev_count["subscribers"])/((cur_count["time"]-prev_count["time"])/60/60.0),
     active_count: (cur_count["active_users"]-prev_count["active_users"])/((cur_count["time"]-prev_count["time"])/60/60.0),
-    active_pct: (cur_count["active_users"].to_f/cur_count["subscribers"]-prev_count["active_users"].to_f/prev_count["subscribers"])}
+    active_pct: ((active_pct.nan? || !active_pct.finite?) ? 0 : active_pct)}
   end
 
   def stats
