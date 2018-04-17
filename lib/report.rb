@@ -285,7 +285,7 @@ class Report
     Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
   end
  
-  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7, window=60*10)
+  def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7*3, window=60*10)
     cursor = latest
     while latest-dist < cursor
       CreateReport.perform_async(cursor)
