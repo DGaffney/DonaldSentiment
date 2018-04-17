@@ -238,6 +238,40 @@
         newChart(author_deleted_time, content_type+"_author_deleted_time")
         newChart(author_karma_deletion, content_type+"_author_karma_deletion")
       }
+      function genDomainCharts(parsed){
+        date_timeline = {}
+        $.each(parsed["data"], function (index, value){
+          var date = new Date(value[0]*1000);
+          date_str = strftime(date, "%Y-%m-%d %H:00")
+          if (date_timeline[date_str] == null){
+            date_timeline[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0}
+          }
+          $.each(value[1]["observation"]["content"]["stats"]["domains"], function(iindex, vvalue){
+            date_timeline[date_str][vvalue[1]["category"]] += vvalue[1]["current_count"]
+          })
+        })
+        data = []
+        for (var date_key in date_timeline) {
+          for (var content_type in date_timeline[date_key]) {
+            data.push({type: content_type, date: date_key, value: date_timeline[date_key][content_type]})
+          }
+        }
+        
+        $.each(date_timeline, function (index, value){
+          $.each(date_timelinedate_timeline[k], function (index, value){
+          
+          })
+        })
+          for (var link_type in )
+        }
+        new tauCharts.Chart({
+            type: 'stacked-area',
+            x: 'date',
+            y: 'effort',
+            color: 'team',
+            data: data
+        }).renderTo('#domain_shared_map');
+      }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
         $.get("/api/latest/"+value+"/reduced.json", function(data, status){
           parsed = jQuery.parseJSON(data);
@@ -380,6 +414,23 @@
               <h4>Net Karma of User deletions</h4>
               <div id="submissions_author_karma_deletion" class="c chart">
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+              <h4>Domains Shared</h4>
+              <div id="domain_shared_map" class="c chart">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+              <h4>Comments</h4>
             </div>
           </div>
         </div>
