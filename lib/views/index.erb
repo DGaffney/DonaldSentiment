@@ -539,6 +539,23 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-12">
+              <h3>API</h3>
+              <p><b>/api/latest/:content_type/reduced.json?distance=:distance</b> Get only descriptive statistics for latest report - reports are generated every ten minutes.</p> 
+              <p><b>/api/latest/:content_type/full.json?distance=:distance</b>  Get descriptive statistics and raw comments/submissions for latest report - reports are generated every ten minutes.</p>
+              <p><b>/api/:timestamp/:content_type/reduced.json?distance=:distance</b> Get only descriptive statistics for report closest to provided epoch timestamp - reports are generated every ten minutes.</p>
+              <p><b>/api/:timestamp/:content_type/full.json?distance=:distance</b> Get descriptive statistics and raw comments/submissions for report closest to provided epoch timestamp - reports are generated every ten minutes.</p>
+              <h4>Options</h4>
+              <p><b>:content_type</b>: Can be "comments", "submissions", "subscribers", or "domains"</p>
+              <p><b>:timestamp</b>: Can be any epoch timestamp such as <%= Time.now.utc.to_i %> to represent <%= Time.now.utc %>. Note that data before April 2018 was not collected live, so tables may be less representative.</p>
+              <p><b>:distance</b>: Integer, distance in days for how far back the window of viewing should be.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
