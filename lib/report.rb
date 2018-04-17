@@ -132,10 +132,12 @@ class Report
 
   def format_comments(query)
     objects = []
+    comms = []
     query.collect do |comment|
-      sorted_updates = (comment["updated_info"]||[]).sort_by{|x| x["delay"]}
+    comms << comment
+      sorted_updates = (comment["updated_info"]||[]).sort_by{|x| x["delay"].to_i}
       latest_update = sorted_updates.last || {}
-      scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
+      scored = sorted_updates.collect{|x| [x["ups"]||0, x["delay"]||0]}.reject{|x| x[1] > 1800}
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       toplevel = comment["parent_id"].include?("t3_") ? true : false
