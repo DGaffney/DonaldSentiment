@@ -139,17 +139,36 @@
       function genURLRow(data, key){
         
       }
+      function sum(list){
+        return list.reduce(function(a, b) { return a + b; });
+      }
+      function urlValues(dictionary, subkey){
+        vals = []
+        for (var key in dictionary){
+          vals.push(dictionary[key][subkey])
+        }
+        return vals
+      }
       function genURLTimelineCharts(parsed){
-        
+        date_timeline = {}
+        date_timeline_comment_scaled = {}
+        date_timeline_karma_scaled = {}
         for (var date_str in parsed) {
           var date = new Date(Date.parse(date_str));
           scores = parsed[date_str]
           out_date_str = strftime(date, "%Y-%m-%d")
-          for (var metric in core_metrics){
-            row = genRow(scores, metric, date)
-            if (row != null){
-              core_metrics[metric].push(row)
-            }
+          total_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "count"))
+          total_comment_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "num_comment_count"))
+          total_karma_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "karma_count"))
+          if (date_timeline[date_str] == null){
+            date_timeline[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0, "uncategorized": 0}
+            date_timeline_comment_scaled[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0, "uncategorized": 0}
+            date_timeline_karma_scaled[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0, "uncategorized": 0}
+          }
+          for (var site_type in scores["observed"]["content"]["url_stats"]){
+            date_timeline[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["count"]/total_count
+            date_timeline_comment_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["num_comment_count"]/total_comment_count
+            date_timeline_karma_scaled[date_str][site_type] += scores["observed"]["content"]["url_stats"][site_type]["karma_count"]
           }
         }
       }
