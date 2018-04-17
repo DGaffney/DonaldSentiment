@@ -157,7 +157,7 @@ class Report
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
-      objects << {id: submission["id"], delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? || !up_rate.finite? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
+      objects << {comment_count: latest_update["num_comments"], id: submission["id"], delay_count: scored.count, net_karma: latest_update["ups"].to_f, time: submission["created_utc"], up_rate: (up_rate.nan? || !up_rate.finite? ? 0 : up_rate), admin_deleted_at: admin_deleted_at, user_deleted_at: user_deleted_at, author: submission["author"], domain: domain}
       objects[-1][:up_rate] = 0 if objects[-1][:up_rate].nan?
     end
 #    csv = CSV.open("counts.csv", "w")
@@ -170,6 +170,7 @@ class Report
 
   def self.snapshot(time=Time.now)
     obj = self.new(time)
+    obj.set_raw_data(time)
     obj.raw_data.merge({stats: obj.stats})
   end
   
@@ -200,7 +201,10 @@ class Report
 
   def initialize(time=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, report_width=600)
     @report_width = report_width
-    range = [time, time-report_width]
+  end
+
+  def set_raw_data(time)
+    range = [time, time-@report_width]
     @raw_data = {
       start_time: range.last,
       end_time: range.first,
@@ -211,7 +215,7 @@ class Report
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
-  
+
   def subscriber_count_diff(cur_count, prev_count)
     active_pct = (cur_count["active_users"].to_f/cur_count["subscribers"]-prev_count["active_users"].to_f/prev_count["subscribers"])
     sub_count = (cur_count["subscribers"]-prev_count["subscribers"])/((cur_count["time"]-prev_count["time"])/60/60.0)
