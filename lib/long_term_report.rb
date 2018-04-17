@@ -1,10 +1,6 @@
 class LongTermReport
   include Sidekiq::Queue
   def perform(day)
-    LongTermReport.new(day)
-  end
-
-  def initialize(day)
     start_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 00:00:00 +0000")).utc.to_i
     end_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 23:59:59 +0000")).utc.to_i
     comments = Report.new.format_comments($client[:reddit_comments].find(created_utc: {"$gte" => start_time_int, "$lte" => end_time_int}))
@@ -18,6 +14,7 @@ class LongTermReport
     mapped = {core_stats: Hash[com_stats.collect{|k,v| ["comments_"+k.to_s, v]}].merge(Hash[sub_stats.collect{|k,v| ["submissions_"+k.to_s, v]}]).merge("avg_active_pct" => avg_active_pct, "subscriber_counts" => subscriber_counts)}
     mapped[:url_stats] = domain_map(submissions)
     $client[:day_stats].insert_one(start_time: start_time_int, end_time: end_time_int, content: mapped)
+    LongTermReport.new(day)
   end
   
   def domain_map(submissions)
