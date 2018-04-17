@@ -269,6 +269,8 @@
           parsed = jQuery.parseJSON(data);
           if (parsed["type"] == "subscribers"){
             genSubscriberCharts(parsed)
+          } else if (parsed["type"] == "domains"){
+            genDomainCharts(parsed)
           } else {
             genContentCharts(parsed, parsed["type"])
           }
