@@ -21,6 +21,12 @@ class UpdateContent
     Hash[response["data"]["children"].collect{|r| [r["kind"]+"_"+r["data"]["id"], {num_comments: r["data"]["num_comments"], shadow_deleted: (r["data"]["is_crosspostable"] == false), admin_deleted: (r["data"]["body"] == "[removed]" || r["data"]["selftext"] == "[removed]"), user_deleted: (r["data"]["body"] == "[deleted]" || r["data"]["selftext"] == "[deleted]"), ups: r["data"]["ups"], gilded: r["data"]["gilded"], edited: r["data"]["edited"]}]}]
   end
   
+  def self.update_info_for_existing(existing, collection)
+    if existing["updated_info"].nil? || existing["updated_info"].empty?
+      $client[collection].update_one({id: existing["id"]}, {"$push" => {updated_info: {delay: 0, num_comments: existing["num_comments"], shadow_deleted: (existing["is_crosspostable"] == false), admin_deleted: (existing["body"] == "[removed]" || existing["selftext"] == "[removed]"), user_deleted: (existing["body"] == "[deleted]" || existing["selftext"] == "[deleted]"), ups: existing["ups"], gilded: existing["gilded"], edited: existing["edited"]}}})
+    end
+  end
+  
   def found_docs(ids)
     t = Time.now.utc.to_i
     begin    
