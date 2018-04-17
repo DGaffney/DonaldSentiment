@@ -10,7 +10,6 @@ class Site < Sinatra::Base
   end
 
   get "/api/:timestamp/:content_type/reduced.json" do
-    
     return {type: params[:content_type], data: Report.report(Time.at(params[:timestamp].to_i), params[:content_type], true).sort_by{|k,v| k}}.to_json
   end
 end
