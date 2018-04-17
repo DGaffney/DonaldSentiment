@@ -30,15 +30,15 @@ class Report
     {prev_month: $client[:stats].find(self.prev_month_query(time)).projection(self.report_projection(content_type)).to_a, prev_day: $client[:stats].find(self.prev_days_query(time)).projection(self.report_projection(content_type)).to_a}
   end
 
-  def self.report(time=Time.now, content_type="comments", reduction=false)
+  def self.report(time=Time.now, content_type="comments", reduction=false, width=60*60*24)
     results = {}
     time_int = TimeDistances.time_ten_minute(time)
     if reduction
-      $client[:stats].find(time: {"$gte" => time_int-60*60*24, "$lte" => time_int}).projection(self.report_projection(content_type)).each do |time_point|
+      $client[:stats].find(time: {"$gte" => time_int-width, "$lte" => time_int}).projection(self.report_projection(content_type)).each do |time_point|
         results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_point["time"], content_type)}
       end
     else
-      $client[:stats].find(time: {"$gte" => time_int-60*60*24, "$lte" => time_int}).each do |time_point|
+      $client[:stats].find(time: {"$gte" => time_int-width, "$lte" => time_int}).each do |time_point|
         results[time_point["time"]] = {observation: time_point, reference: self.reference_points(time_point, time_int, content_type)}
       end
     end
@@ -198,15 +198,16 @@ class Report
     end
   end
 
-  def initialize(time=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i)
-    range = [time, time-600]
+  def initialize(time=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, report_width=600)
+    @report_width = report_width
+    range = [time, time-report_width]
     @raw_data = {
       start_time: range.last,
       end_time: range.first,
       comments: format_comments(db_query(time, :reddit_comments)),
       submissions: format_submissions(db_query(time, :reddit_submissions)),
       authors: db_query(time, :reddit_authors).to_a,
-      subreddit_counts: {raw: db_query(time, :subreddit_counts).to_a.first, diff: subscriber_count_diff(subscriber_query(time, :subreddit_counts), subscriber_query(time-3600, :subreddit_counts))},
+      subreddit_counts: {raw: db_query(time, :subreddit_counts).to_a.first, diff: subscriber_count_diff(subscriber_query(time, :subreddit_counts), subscriber_query(time-@report_width*5, :subreddit_counts))},
       domain_map: get_domains(time, db_query(time, :reddit_submissions))
       };false
   end
@@ -261,7 +262,7 @@ class Report
   end
 
   def db_query(time, collection)
-    range = [time, time-600]
+    range = [time, time-@report_width]
     if collection_field_query(collection).class == Array
       query = {"$or" => collection_field_query(collection).collect{|c| {c => {"$lte" => range.first, "$gte" => range.last}}}}
     else
