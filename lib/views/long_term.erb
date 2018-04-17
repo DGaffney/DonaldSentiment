@@ -105,23 +105,25 @@
           return format;
       }
       function newChart(chartData, target){
-        new tauCharts.Chart({
-          data: chartData,
-          type: 'scatterplot',
-          x: 'date',
-          y: 'value',
-          color: 'relative_value',
-          guide: {
-            showAnchors: 'always',
-            interpolate: "smooth-keep-extremum",
-            color: {
-              brewer: { higher: '#28a745', lower: '#dc3545', similar: '#17a2b8' }
-            }
-          },
-          plugins: [
-            tauCharts.api.plugins.get('tooltip')()
-          ]
-        }).renderTo('#'+target);
+        if ($('#'+target)[0] != null){
+          new tauCharts.Chart({
+            data: chartData,
+            type: 'scatterplot',
+            x: 'date',
+            y: 'value',
+            color: 'relative_value',
+            guide: {
+              showAnchors: 'always',
+              interpolate: "smooth-keep-extremum",
+              color: {
+                brewer: { higher: '#28a745', lower: '#dc3545', similar: '#17a2b8' }
+              }
+            },
+            plugins: [
+              tauCharts.api.plugins.get('tooltip')()
+            ]
+          }).renderTo('#'+target);          
+        }
       }
       function genRow(scores, metric, date){
         if (scores["reference"]!= null){
