@@ -326,7 +326,7 @@
         }).renderTo('#domain_shared_map_karma_scaled');
       }
       $.each(["comments", "submissions", "subscribers", "domains"], function (index, value){
-        $.get("/api/<%= @time %>/"+value+"/reduced.json", function(data, status){
+        $.get("/api/<%= @time %>/"+value+"/reduced.json?distance=<%= @distance %>", function(data, status){
           parsed = jQuery.parseJSON(data);
           if (parsed["type"] == "subscribers"){
             genSubscriberCharts(parsed)
