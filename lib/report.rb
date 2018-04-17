@@ -248,7 +248,7 @@ class Report
 
   def projections(collection)
     Hash[{reddit_comments: [:id, :created_utc, :author, :ups, :parent_id, :id, :link_id, :body, :updated_info],
-    reddit_submissions: [:id, :created_utc, :author, :ups, :url, :id, :link_id, :body, :updated_info],
+    reddit_submissions: [:id, :created_utc, :author, :ups, :url, :id, :link_id, :body, :updated_info, :num_comments, :url],
     reddit_authors: [:author, :comment_count, :last_comment_seen, :first_comment_seen, :submission_count, :last_submission_seen, :first_submission_seen],
     subreddit_counts: [:time, :subscribers, :active_users]}[collection].collect{|k| [k, 1]}]
   end
@@ -269,8 +269,20 @@ class Report
   end
 
   def get_domains(time, queries)
-    hosts = db_query(time, :reddit_submissions).projection(url: 1).to_a.collect{|x| x["url"]}.collect{|x| URI.parse(x).host rescue nil}.compact.counts
-    Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => hosts[x["domain"]])]}].to_a
+    host_counts = {}
+    host_num_counts = {}
+    host_karma_counts = {}
+    db_query(time, :reddit_submissions).each do |submission|
+      host = URI.parse(submission["url"]).host rescue nil
+      next if host.nil?
+      host_counts[host] ||= 0
+      host_num_counts[host] ||= 0
+      host_karma_counts[host] ||= 0
+      host_counts[host] += 1
+      host_num_counts[host] += (submission["updated_info"].sort_by{|k| k["delay"]}.last["num_comments"] rescue 0)
+      host_karma_counts[host] += (submission["updated_info"].sort_by{|k| k["delay"]}.last["ups"] rescue 0)
+    end
+    Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
   end
  
   def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7*4, window=60*10)
