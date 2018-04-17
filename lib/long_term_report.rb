@@ -14,7 +14,6 @@ class LongTermReport
     mapped = {core_stats: Hash[com_stats.collect{|k,v| ["comments_"+k.to_s, v]}].merge(Hash[sub_stats.collect{|k,v| ["submissions_"+k.to_s, v]}]).merge("avg_active_pct" => avg_active_pct, "subscriber_counts" => subscriber_counts)}
     mapped[:url_stats] = domain_map(submissions)
     $client[:day_stats].insert_one(start_time: start_time_int, end_time: end_time_int, content: mapped)
-    LongTermReport.new(day)
   end
   
   def domain_map(submissions)
