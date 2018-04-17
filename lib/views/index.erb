@@ -195,10 +195,17 @@
             reference_raw.push(i_value["content"]["stats"]["subreddit_counts"]["raw"])
           })
           if (observed_diff != null){
-            sub_count.push(dataPointWithReference(observed_diff, reference_diff, "subscriber_count", date))
+            score = dataPointWithReference(observed_diff, reference_diff, "subscriber_count", date)
+            if (Math.abs(score["value"]) < 10000){
+              sub_count.push(score)              
+            }
           }
           if (observed_raw != null){
-            active_count.push(dataPointWithReference(observed_raw, reference_raw, "active_users", date))            
+            score = dataPointWithReference(observed_raw, reference_raw, "active_users", date)
+            if (Math.abs(score["value"]) > 100){
+              sub_count.push(score)              
+            }
+            active_count.push(score)
           }
         })
         newChart(active_count, "active_count")
