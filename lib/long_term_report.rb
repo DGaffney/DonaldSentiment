@@ -19,7 +19,9 @@ class LongTermReport
     sub_stats = Report.new.common_stats(submissions)
     sorted_subscriber_counts = subscriber_counts.sort_by{|x| x["time"]}.reject{|x| x["subscribers"] == 0}
     avg_active_pct = sorted_subscriber_counts.collect{|x| x["active_users"].to_f/x["subscribers"]}.reject(&:nan?).select(&:finite?).average
-    subscriber_counts = (sorted_subscriber_counts[1..-1]||[]).each_with_index.collect{|s, i| Report.new.subscriber_count_diff(s, sorted_subscriber_counts[i])}.collect{|x| x[:subscriber_count]}.average
+    avg_active_pct = 0.0 if avg_active_pct.nan? || !avg_active_pct.finite?
+    subscriber_counts = (sorted_subscriber_counts[1..-1]||[]).each_with_index.collect{|s, i| Report.new.subscriber_count_diff(s, sorted_subscriber_counts[i])}.collect{|x| x[:subscriber_count]}.reject(&:nan?).select(&:finite?).average
+    subscriber_counts = 0.0 if subscriber_counts.nan? || !subscriber_counts.finite?
     mapped = {core_stats: Hash[com_stats.collect{|k,v| ["comments_"+k.to_s, v]}].merge(Hash[sub_stats.collect{|k,v| ["submissions_"+k.to_s, v]}]).merge("avg_active_pct" => avg_active_pct, "subscriber_counts" => subscriber_counts)}
     mapped[:url_stats] = domain_map(submissions)
     $client[:day_stats].insert_one(start_time: start_time_int, end_time: end_time_int, content: mapped)
