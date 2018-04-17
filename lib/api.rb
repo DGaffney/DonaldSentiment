@@ -33,4 +33,8 @@ class Site < Sinatra::Base
       return {type: params[:content_type], data: Report.report(Time.at(params[:timestamp].to_i), params[:content_type], false, params[:distance]).sort_by{|k,v| k}}.to_json
     end
   end
+  
+  get "/api/:model/:start_time.json" do
+    return $client["reddit_#{params[:model]}".to_sym].find({created_utc: {"$gte" => params[:start_time].to_i}}, {:sort => ['created_utc',1]}).first(100).to_json
+  end
 end
