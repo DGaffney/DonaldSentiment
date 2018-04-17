@@ -152,7 +152,7 @@ class Report
       submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0}
       sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
-      scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
+      scored = sorted_updates.collect{|x| [x["ups"]||0, x["delay"]||0]}.reject{|x| x[1] > 1800}
       admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"] || x["shadow_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
@@ -279,10 +279,10 @@ class Report
       host_num_counts[host] ||= 0
       host_karma_counts[host] ||= 0
       host_counts[host] += 1
-      host_num_counts[host] += (submission["updated_info"].sort_by{|k| k["delay"]}.last["num_comments"] rescue 0)
-      host_karma_counts[host] += (submission["updated_info"].sort_by{|k| k["delay"]}.last["ups"] rescue 0)
+      host_num_counts[host] += ((submission["updated_info"].sort_by{|k| k["delay"]}.last["num_comments"] rescue 0)||0)
+      host_karma_counts[host] += ((submission["updated_info"].sort_by{|k| k["delay"]}.last["ups"] rescue 0)||0)
     end
-    Hash[$client[:domains].find(domain: {"$in" => hosts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
+    Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).collect{|x| [x["domain"], x.merge("current_count" => host_counts[x["domain"]], "num_comment_count" => host_num_counts[x["domain"]], "karma_count" => host_karma_counts[x["domain"]])]}].to_a
   end
  
   def self.backfill(latest=Time.at(TimeDistances.time_ten_minute(Time.now)).utc.to_i, dist=60*60*24*7*4, window=60*10)
@@ -296,5 +296,7 @@ class Report
 end
 #t = Time.now;gg = Report.snapshot;tt = Time.now;false
 #Time.now.strftime("%Y-%m-%d")
+#$client[:stats].drop
+#$client[:stats].indexes.create_one({ time: -1 })
 #Report.backfill
 #Report.snapshot
