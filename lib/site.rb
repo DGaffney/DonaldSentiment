@@ -6,7 +6,7 @@ class Site < Sinatra::Base
     if params[:time].nil?
       @time = Time.now.to_i
     else
-      @time = params[:time]
+      @time = params[:time].to_i
     end
     erb :index
   end
