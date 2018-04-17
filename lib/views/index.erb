@@ -296,7 +296,7 @@
             <a href="/?time=<%= @time.to_i-60*60*24 %>">Back one day</a>
           <% elsif @time < Time.now.utc.to_i-60*60*24*7*4 %>
             <a href="/?time=<%= @time.to_i+60*60*24 %>">Forward one day</a>
-          <% else %>
+          <% elsif !(@time > Time.now.utc.to_i-60*60*24) && !(@time < Time.now.utc.to_i-60*60*24*7*4)%>
             <a href="/?time=<%= @time.to_i-60*60*24 %>">Back one day</a> | <a href="/?time=<%= @time.to_i+60*60*24 %>">Forward one day</a>
           <% end %>
         </div>
