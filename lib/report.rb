@@ -153,7 +153,7 @@ class Report
       sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
       latest_update = sorted_updates.last || {}
       scored = sorted_updates.collect{|x| [x["ups"], x["delay"]]}.reject{|x| x[1] > 1800}
-      admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"]}.first["delay"] rescue nil
+      admin_deleted_at = sorted_updates.select{|x| x["admin_deleted"] || x["shadow_deleted"]}.first["delay"] rescue nil
       user_deleted_at = sorted_updates.select{|x| x["user_deleted"]}.first["delay"] rescue nil
       domain = URI.parse(submission["url"]).host rescue nil
       up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average

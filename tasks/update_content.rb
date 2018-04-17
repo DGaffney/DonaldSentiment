@@ -18,7 +18,7 @@ class UpdateContent
   end
 
   def clean_results(ids, response)
-    Hash[response["data"]["children"].collect{|r| [r["kind"]+"_"+r["data"]["id"], {num_comments: r["data"]["num_comments"], admin_deleted: (r["data"]["body"] == "[removed]" || r["data"]["selftext"] == "[removed]"), user_deleted: (r["data"]["body"] == "[deleted]" || r["data"]["selftext"] == "[deleted]"), ups: r["data"]["ups"], gilded: r["data"]["gilded"], edited: r["data"]["edited"]}]}]
+    Hash[response["data"]["children"].collect{|r| [r["kind"]+"_"+r["data"]["id"], {num_comments: r["data"]["num_comments"], shadow_deleted: (r["data"]["is_crosspostable"] == false), admin_deleted: (r["data"]["body"] == "[removed]" || r["data"]["selftext"] == "[removed]"), user_deleted: (r["data"]["body"] == "[deleted]" || r["data"]["selftext"] == "[deleted]"), ups: r["data"]["ups"], gilded: r["data"]["gilded"], edited: r["data"]["edited"]}]}]
   end
   
   def found_docs(ids)
