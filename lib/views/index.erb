@@ -201,6 +201,8 @@
             active_count.push(dataPointWithReference(observed_raw, reference_raw, "active_users", date))            
           }
         })
+        newChart(active_count, "active_count")
+        newChart(sub_count, "subscriber_counts")
       }
       function dataPointWithReference(observed, reference, data_key, date){
         scores = []
@@ -504,17 +506,12 @@
           </div>
           <div class="row">
             <div class="col-md-12">
-              <div id="domain_shared_map" class="c chart">
+              <div id="active_count" class="c chart">
             </div>
           </div>
           <div class="row">
             <div class="col-md-12">
-              <div id="domain_shared_map_comment_scaled" class="c chart">
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <div id="domain_shared_map_karma_scaled" class="c chart">
+              <div id="subscriber_counts" class="c chart">
             </div>
           </div>
         </div>
