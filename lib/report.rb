@@ -123,11 +123,11 @@ class Report
   end
 
   def author_karma_deletion_speed(objects)
-    return objects.select{|obj| !obj[:user_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:user_deleted_at].to_f}.average
+    return objects.select{|obj| !obj[:user_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:user_deleted_at].to_f}.reject(&:nan?).select(&:finite?).average
   end
 
   def admin_karma_deletion_speed(objects)
-    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:admin_deleted_at].to_f}.average
+    return objects.select{|obj| !obj[:admin_deleted_at].nil?}.collect{|obj| obj[:net_karma].abs/obj[:admin_deleted_at].to_f}.reject(&:nan?).select(&:finite?).average
   end
 
   def format_comments(query)
