@@ -139,6 +139,20 @@
       function genURLRow(data, key){
         
       }
+      function genURLTimelineCharts(parsed){
+        
+        for (var date_str in parsed) {
+          var date = new Date(Date.parse(date_str));
+          scores = parsed[date_str]
+          out_date_str = strftime(date, "%Y-%m-%d")
+          for (var metric in core_metrics){
+            row = genRow(scores, metric, date)
+            if (row != null){
+              core_metrics[metric].push(row)
+            }
+          }
+        }
+      }
       function genContentCharts(parsed){
         var core_metrics = {"comments_admin_deleted_count": [], "comments_admin_deleted_time": [], "comments_admin_karma_deletion": [], "comments_admin_karma_deletion_speed": [], "comments_author_deleted_count": [], "comments_author_deleted_time": [], "comments_author_karma_deletion": [], "comments_author_karma_deletion_speed": [], "comments_count": [], "comments_distinct_admin_deleted_count": [], "comments_distinct_author_deleted_count": [], "comments_distinct_count": [], "submissions_admin_deleted_count": [], "submissions_admin_deleted_time": [], "submissions_admin_karma_deletion": [], "submissions_admin_karma_deletion_speed": [], "submissions_author_deleted_count": [], "submissions_author_deleted_time": [], "submissions_author_karma_deletion": [], "submissions_author_karma_deletion_speed": [], "submissions_count": [], "submissions_distinct_admin_deleted_count": [], "submissions_distinct_author_deleted_count": [], "submissions_distinct_count": [], "subscriber_counts": [], "avg_active_pct": []}
         for (var date_str in parsed) {
@@ -159,6 +173,7 @@
       $.get("/api/long_term_trends.json", function(data, status){
         parsed = jQuery.parseJSON(data);
         genContentCharts(parsed)
+        genURLTimelineCharts(parsed)
         g = 1
       });
     </script>

@@ -9,7 +9,7 @@ class LongTermReport
     stats_with_reference
   end
 
-  def perform(day)
+  def perform(day=Time.now.to_s)
     start_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 00:00:00 +0000")).utc.to_i
     end_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 23:59:59 +0000")).utc.to_i
     comments = Report.new.format_comments($client[:reddit_comments].find(created_utc: {"$gte" => start_time_int, "$lte" => end_time_int}))
