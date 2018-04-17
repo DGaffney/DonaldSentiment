@@ -35,6 +35,12 @@ class Site < Sinatra::Base
   end
   
   get "/api/:model/:start_time.json" do
-    return $client["reddit_#{params[:model]}".to_sym].find({created_utc: {"$gte" => params[:start_time].to_i}}, {:sort => ['created_utc',1]}).first(100).to_json
+    model = {"submissions" => :reddit_submissions,
+    "comments" => :reddit_comments,
+    "subscribers" => :subreddit_counts}[params[:model]]
+    time_param = {"submissions" => :created_utc,
+    "comments" => :created_utc,
+    "subscribers" => :time}[params[:model]]
+    return $client[model].find({time_param => {"$gte" => params[:start_time].to_i}}, {:sort => ['created_utc',1]}).first(100).to_json
   end
 end
