@@ -9,7 +9,7 @@ class LongTermReport
     stats_with_reference
   end
 
-  def perform(day=Time.now.to_s)
+  def perform(day=(Time.now.utc-60*60*24).to_s)
     start_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 00:00:00 +0000")).utc.to_i
     end_time_int = Time.parse(Time.parse(day.to_s).strftime("%Y-%m-%d 23:59:59 +0000")).utc.to_i
     comments = Report.new.format_comments($client[:reddit_comments].find(created_utc: {"$gte" => start_time_int, "$lte" => end_time_int}))
@@ -44,6 +44,7 @@ class LongTermReport
     category_counts = {}
     categories = Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).projection(category: 1, domain: 1).collect{|x| [x["domain"], x["category"]||"uncategorized"]}]
     host_counts.keys.each do |domain|
+      next if categories[domain].nil?
       category_counts[categories[domain]] = {count: host_counts[domain], num_comment_count: host_num_counts[domain], karma_count: host_karma_counts[domain]}
     end
     category_counts
