@@ -298,13 +298,14 @@
           <% elsif !(@time > Time.now.utc.to_i-60*60*24) && !(@time < Time.now.utc.to_i-60*60*24*7*4)%>
             <a href="/?time=<%= @time.to_i-60*60*24 %>">Back one day</a> | <a href="/?time=<%= @time.to_i+60*60*24 %>">Forward one day</a>
           <% end %>
+          <h3>Currently viewing 24 hours preceding <%= Time.at(@time).utc %></h3>
         </div>
       </div>
       <div class="row">
         <div class="col-md-6">
           <div class="row">
             <div class="col-md-12">
-              <h4>Comments</h4>
+              <h3>Comments</h3>
             </div>
             <div class="col-md-12">
               <h4>Count</h4>
@@ -365,7 +366,7 @@
         <div class="col-md-6">
           <div class="row">
             <div class="col-md-12">
-              <h4>Submissions</h4>
+              <h3>Submissions</h3>
             </div>
             <div class="col-md-12">
               <h4>Count</h4>
@@ -428,7 +429,7 @@
         <div class="col-md-6">
           <div class="row">
             <div class="col-md-12">
-              <h4>Domains Shared</h4>
+              <h3>Domains Shared</h3>
               <div id="domain_shared_map" class="c chart">
             </div>
           </div>
