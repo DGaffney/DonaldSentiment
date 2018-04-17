@@ -44,16 +44,16 @@ end
 #$client[:stats].update_one({_id: obj["_id"]}, {"$set" => {"time" => Time.at(TimeDistances.time_ten_minute(obj["time"])).utc}})
 #end;false
 
-i = 0
-$client[:reddit_submissions].find.each do |submission|
-  UpdateContent.update_info_for_existing(submission, :reddit_submissions)
-  print i if i % 10000 == 0
-  i += 1
-end;false
-
-i = 0
-$client[:reddit_comments].find.each do |submission|
-  UpdateContent.update_info_for_existing(submission, :reddit_comments)
-  print i if i % 10000 == 0
-  i += 1
-end;false
+#i = 0
+#$client[:reddit_submissions].find.each do |submission|
+#  UpdateContent.update_info_for_existing(submission, :reddit_submissions)
+#  print i if i % 10000 == 0
+#  i += 1
+#end;false
+#
+#i = 0
+#$client[:reddit_comments].find.each do |submission|
+#  UpdateContent.update_info_for_existing(submission, :reddit_comments)
+#  print i if i % 10000 == 0
+#  i += 1
+#end;false
