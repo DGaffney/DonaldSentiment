@@ -252,11 +252,11 @@
         })
         data = []
         for (var date_key in date_timeline) {
-          for (var content_type in date_timeline[date_key]) {
+          $.each(["administration", "conservative_news", "facebook", "google", "image", "news", "other", "screenshot_site", "selftext", "tweet", "video", "wikipedia"], function (index, content_type){
             if (isNaN(date_timeline[date_key][content_type]) == false){
               data.push({type: content_type, date: date_key, value: date_timeline[date_key][content_type]})
-            }
-          }
+            }            
+          })
         }
         new tauCharts.Chart({
             type: 'stacked-area',
