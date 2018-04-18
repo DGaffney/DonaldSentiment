@@ -155,6 +155,7 @@
         date_timeline_comment_scaled = {}
         date_timeline_karma_scaled = {}
         for (var date_str in parsed) {
+          //date_str = "2016-05-06 20:00:00 -0400"
           var date = new Date(Date.parse(date_str));
           scores = parsed[date_str]
           out_date_str = strftime(date, "%Y-%m-%d")
@@ -176,7 +177,7 @@
         data_comment_scaled = []
         data_karma_scaled = []
         for (var date_key in date_timeline) {
-          $.each(["administration", "conservative_news", "facebook", "google", "image", "news", "other", "screenshot_site", "selftext", "tweet", "video", "wikipedia"], function (index, content_type){
+          $.each(["administration", "conservative_news", "facebook", "google", "image", "news", "other", "screenshot_site", "selftext", "tweet", "video", "wikipedia", "uncategorized"], function (index, content_type){
             if (isNaN(date_timeline[date_key][content_type]) == false){
               data.push({type: content_type, date: date_key, value: date_timeline[date_key][content_type]})
               data_comment_scaled.push({type: content_type, date: date_key, value: date_timeline_comment_scaled[date_key][content_type]})
