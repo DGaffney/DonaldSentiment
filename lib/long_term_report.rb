@@ -7,6 +7,12 @@ class LongTermReport
       stats_with_reference[date] = {observed: data, reference: full_stats[date-60*60*24*7]}
     end
     Hash[stats_with_reference.sort_by{|k,v| k}]
+#    latest = full_stats.keys.sort.last
+#    missing = []
+#    while latest > full_stats.keys.sort.first
+#      missing << latest if !full_stats.keys.include?(latest)
+#      latest -= 24*60*60
+#    end
   end
 
   def perform(day=(Time.now.utc-60*60*12).to_s)
@@ -45,7 +51,10 @@ class LongTermReport
     categories = Hash[$client[:domains].find(domain: {"$in" => host_counts.keys}).projection(category: 1, domain: 1).collect{|x| [x["domain"], x["category"]||"uncategorized"]}]
     host_counts.keys.each do |domain|
       next if categories[domain].nil?
-      category_counts[categories[domain]] = {count: host_counts[domain], num_comment_count: host_num_counts[domain], karma_count: host_karma_counts[domain]}
+      category_counts[categories[domain]] ||= {count: host_counts[domain], num_comment_count: host_num_counts[domain], karma_count: host_karma_counts[domain]}
+      category_counts[categories[domain]][:count] += host_counts[domain]
+      category_counts[categories[domain]][:num_comment_count] += host_num_counts[domain]
+      category_counts[categories[domain]][:karma_count] += host_karma_counts[domain]
     end
     category_counts
   end
