@@ -2,6 +2,10 @@ class Fixnum
   def nan?
     return false
   end
+
+  def finite?
+    return true
+  end
 end
 class Report
   attr_accessor :raw_data
