@@ -157,9 +157,9 @@
           var date = new Date(Date.parse(date_str));
           scores = parsed[date_str]
           out_date_str = strftime(date, "%Y-%m-%d")
-          total_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "count"))
-          total_comment_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "num_comment_count"))
-          total_karma_count = sum(urlValues(scores["observed"]["content"]["url_stats"], "karma_count"))
+          total_count = (sum(urlValues(scores["observed"]["content"]["url_stats"], "count"))+0.0001)
+          total_comment_count = (sum(urlValues(scores["observed"]["content"]["url_stats"], "num_comment_count"))+0.0001)
+          total_karma_count = (sum(urlValues(scores["observed"]["content"]["url_stats"], "karma_count"))+0.0001)
           if (date_timeline[date_str] == null){
             date_timeline[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0, "uncategorized": 0}
             date_timeline_comment_scaled[date_str] = {"image": 0, "selftext": 0, "video": 0, "conservative_news": 0, "tweet": 0, "screenshot_site": 0, "facebook": 0, "news": 0, "google": 0, "administration": 0, "wikipedia": 0, "other": 0, "uncategorized": 0}
