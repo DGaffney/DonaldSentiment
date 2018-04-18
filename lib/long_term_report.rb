@@ -1,12 +1,12 @@
 class LongTermReport
   include Sidekiq::Worker
   def self.report
-    full_stats = Hash[$client[:day_stats].find.collect{|x| [Time.at(x["start_time"]), x]}]
+    full_stats = Hash[$client[:day_stats].find.collect{|x| [Time.at(x["start_time"]), x]}];false
     stats_with_reference = {}
     full_stats.each do |date, data|
       stats_with_reference[date] = {observed: data, reference: full_stats[date-60*60*24*7]}
     end
-    stats_with_reference
+    Hash[stats_with_reference.sort_by{|k,v| k}]
   end
 
   def perform(day=(Time.now.utc-60*60*12).to_s)

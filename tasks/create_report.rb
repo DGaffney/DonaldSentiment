@@ -6,5 +6,5 @@ class CreateReport
   end
 end
 
-#Sidekiq::Cron::Job.create(name: 'Report Creator', cron: '*/10 * * * *', class: 'CreateReport')
+#Sidekiq::Cron::Job.create(name: 'Report Creator 10 min', cron: '*/10 * * * *', class: 'CreateReport')
 #Sidekiq::Cron::Job.create(name: 'Report Creator', cron: '0 1 * * *', class: 'LongTermReport')

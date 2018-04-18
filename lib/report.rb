@@ -7,6 +7,7 @@ class Fixnum
     return true
   end
 end
+
 class Report
   attr_accessor :raw_data
   def self.prev_month_query(time)
