@@ -305,6 +305,27 @@ class Report
       cursor -= window
     end
   end
+  
+  def get_domain_scores
+    domain_scores = {}
+    i = 0
+    subs = []
+    $client[:reddit_submissions].find.collect do |submission|
+      submission["updated_info"] ||= []
+      submission["updated_info"] << {"admin_deleted"=>false, "user_deleted"=>false, "ups"=>0, "gilded"=>0, "edited"=>false, "delay"=>0} if submission["updated_info"].empty?
+      sorted_updates = (submission["updated_info"]||[]).sort_by{|x| x["delay"]}
+      latest_update = sorted_updates.last || {}
+      scored = sorted_updates.collect{|x| [x["ups"]||0, x["delay"]||0]}.reject{|x| x[1] > 1800}
+      domain = URI.parse(submission["url"]).host rescue nil
+      up_rate = (scored[1..-1]||[]).each_with_index.collect{|r, i| (r[0]-scored[i][0])/(r[1]-scored[i][1]).to_f}.average
+      domain_scores[domain] ||= {num_comments: 0, net_karma: 0}
+      domain_scores[domain][:num_comments] += latest_update["num_comments"].to_f
+      domain_scores[domain][:net_karma] += latest_update["ups"].to_f
+      print i if i % 10000 == 0
+      i += 1
+    end
+    domain_scores
+  end
 end
 #t = Time.now;gg = Report.snapshot;tt = Time.now;false
 #Time.now.strftime("%Y-%m-%d")
